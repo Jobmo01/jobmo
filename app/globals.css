@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 33% 98%;
+    --foreground: 214 45% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 214 45% 12%;
+
+    --primary: 214 62% 24%;         /* ink sapphire */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 20% 94%;
+    --secondary-foreground: 214 45% 14%;
+
+    --accent: 40 55% 52%;           /* ceylon gold */
+    --accent-foreground: 214 45% 12%;
+
+    --muted: 210 20% 94%;
+    --muted-foreground: 214 15% 40%;
+
+    --destructive: 4 74% 52%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 162 63% 32%;
+    --success-foreground: 0 0% 100%;
+
+    --gem-sapphire: 214 62% 24%;
+    --gem-gold: 40 55% 52%;
+
+    --border: 214 20% 88%;
+    --input: 214 20% 88%;
+    --ring: 214 62% 24%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 214 47% 7%;
+    --foreground: 210 33% 96%;
+
+    --card: 214 42% 10%;
+    --card-foreground: 210 33% 96%;
+
+    --primary: 210 70% 74%;
+    --primary-foreground: 214 47% 8%;
+
+    --secondary: 214 30% 16%;
+    --secondary-foreground: 210 33% 96%;
+
+    --accent: 40 65% 58%;
+    --accent-foreground: 214 47% 8%;
+
+    --muted: 214 30% 16%;
+    --muted-foreground: 214 15% 65%;
+
+    --destructive: 4 70% 58%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 162 55% 45%;
+    --success-foreground: 214 47% 8%;
+
+    --gem-sapphire: 210 70% 74%;
+    --gem-gold: 40 65% 58%;
+
+    --border: 214 30% 18%;
+    --input: 214 30% 18%;
+    --ring: 210 70% 74%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-body;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  ::selection {
+    @apply bg-accent/30;
+  }
+}
+
+@layer utilities {
+  /* Signature "facet" shape: used sparingly for match-score / gem motif per brand direction */
+  .facet-clip {
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  }
+  .facet-clip-sm {
+    clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
