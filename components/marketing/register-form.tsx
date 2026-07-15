@@ -63,7 +63,7 @@ export function RegisterForm() {
         ))}
       </div>
 
-      <form action={signInWithGoogleAction} className="mt-6">
+      <form action={signInWithGoogleAction.bind(null, accountType)} className="mt-6">
         <Button type="submit" variant="outline" className="w-full">
           Continue with Google
         </Button>

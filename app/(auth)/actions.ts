@@ -103,12 +103,23 @@ export async function forgotPasswordAction(_prev: ActionState, formData: FormDat
   return { success: true };
 }
 
-export async function signInWithGoogleAction() {
+export async function signInWithGoogleAction(accountType?: "applicant" | "employer") {
   const supabase = await createClient();
+  // Google OAuth has no equivalent of signUp()'s `options.data` — the
+  // metadata Supabase records for an OAuth user comes entirely from
+  // Google's own response, so there's no way to smuggle our own
+  // "requested_account_type" into it the way email/password signup does.
+  // Instead, the chosen type is encoded directly in the redirect URL,
+  // which Supabase preserves through the whole OAuth round trip — the
+  // callback route reads it back out and applies it, but only for
+  // brand-new signups (see the callback route for why that matters).
+  const redirectTo = new URL(`${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`);
+  if (accountType) redirectTo.searchParams.set("type", accountType);
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+      redirectTo: redirectTo.toString(),
     },
   });
 

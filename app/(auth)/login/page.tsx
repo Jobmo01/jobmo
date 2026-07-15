@@ -27,7 +27,7 @@ export default function LoginPage() {
         Sign in to continue to your JobMo dashboard.
       </p>
 
-      <form action={signInWithGoogleAction} className="mt-6">
+      <form action={signInWithGoogleAction.bind(null, undefined)} className="mt-6">
         <Button type="submit" variant="outline" className="w-full">
           Continue with Google
         </Button>

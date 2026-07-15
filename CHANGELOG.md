@@ -128,6 +128,30 @@ of likely impact:
   anything), and real job search now lives inside the applicant dashboard
   per the earlier "simplify the marketing site" direction.
 
+## Fix — Google sign-up always created applicant accounts — 2026-07-15
+
+### Fixed
+- **Signing up with Google always created an applicant account, with no
+  way to sign up as an employer.** Root cause: email/password signup
+  passes the chosen account type through Supabase's `signUp()` metadata
+  option, which a database trigger reads to set the role — but Google
+  OAuth has no equivalent. The metadata Supabase records for an OAuth
+  user comes entirely from Google's own response (name, email, avatar),
+  so there was never a way for the "I'm hiring" / "I'm looking for a job"
+  choice to reach the database for a Google sign-up; every new Google
+  account silently fell through to the default (`applicant`).
+- Fixed by encoding the chosen type directly into the OAuth redirect URL
+  when the button is clicked from the register page (Supabase preserves
+  the full URL, including query string, through the entire OAuth round
+  trip), and reading it back out in the callback route. **Deliberately
+  gated to brand-new signups only** — determined by comparing the
+  account's creation time to its first sign-in time, which land within
+  seconds of each other for a genuine new signup but are far apart for
+  someone returning later. This means the login page's Google button
+  (used by existing users signing back in) can never have someone's
+  established role silently changed, even though it shares the same
+  underlying action — it just never sends a type to change to.
+
 ## Bug fix — Vercel build failure on /register — 2026-07-15
 
 ### Fixed
