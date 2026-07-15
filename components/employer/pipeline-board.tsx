@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -277,10 +278,13 @@ function ApplicationDetailDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{application.profiles?.full_name ?? "Applicant"}</DialogTitle>
-          <DialogDescription className="flex flex-wrap gap-3">
+          <DialogDescription className="flex flex-wrap items-center gap-3">
             <span className="inline-flex items-center gap-1"><Mail className="h-3.5 w-3.5" /> {application.profiles?.email}</span>
             {profile?.phone && <span className="inline-flex items-center gap-1"><Phone className="h-3.5 w-3.5" /> {profile.phone}</span>}
             {profile?.district && <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {profile.district}</span>}
+            <Link href={`/dashboard/employer/candidates/${application.applicant_id}`} className="text-primary hover:underline">
+              View full profile →
+            </Link>
           </DialogDescription>
         </DialogHeader>
 

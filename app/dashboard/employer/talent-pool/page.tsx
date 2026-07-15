@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Users2 } from "lucide-react";
 import { format } from "date-fns";
 import { profileRepository } from "@/lib/repositories/profile-repository";
@@ -40,7 +41,12 @@ export default async function TalentPoolPage() {
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="font-medium">{entry.profile?.full_name ?? entry.profile?.email ?? "Applicant"}</p>
+                    <Link
+                      href={`/dashboard/employer/candidates/${entry.applicant_id}`}
+                      className="font-medium hover:text-primary hover:underline"
+                    >
+                      {entry.profile?.full_name ?? entry.profile?.email ?? "Applicant"}
+                    </Link>
                     <p className="text-sm text-muted-foreground">
                       {entry.applicant_profile?.district ?? ""}
                       {entry.applicant_profile?.phone ? ` • ${entry.applicant_profile.phone}` : ""}

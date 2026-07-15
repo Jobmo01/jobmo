@@ -42,12 +42,24 @@ export function JobDetailContent({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-semibold tracking-tight">{job.title}</h1>
-          <p className="mt-1 flex items-center gap-1.5 text-muted-foreground">
-            {job.companies?.name}
-            {job.companies?.verification_status === "verified" && (
-              <BadgeCheck className="h-4 w-4 text-primary" aria-label="Verified employer" />
-            )}
-          </p>
+          {job.companies?.id ? (
+            <Link
+              href={`/companies/${job.companies.id}`}
+              className="mt-1 inline-flex items-center gap-1.5 text-muted-foreground hover:text-primary hover:underline"
+            >
+              {job.companies.name}
+              {job.companies.verification_status === "verified" && (
+                <BadgeCheck className="h-4 w-4 text-primary" aria-label="Verified employer" />
+              )}
+            </Link>
+          ) : (
+            <p className="mt-1 flex items-center gap-1.5 text-muted-foreground">
+              {job.companies?.name}
+              {job.companies?.verification_status === "verified" && (
+                <BadgeCheck className="h-4 w-4 text-primary" aria-label="Verified employer" />
+              )}
+            </p>
+          )}
         </div>
       </div>
 

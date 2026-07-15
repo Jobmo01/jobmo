@@ -4,7 +4,7 @@ import { jobRepository } from "@/lib/repositories/job-repository";
 import { profileRepository } from "@/lib/repositories/profile-repository";
 import { applicationRepository } from "@/lib/repositories/application-repository";
 import { jobMatchRepository } from "@/lib/repositories/job-match-repository";
-import { computeMatchForApplicant } from "@/lib/ai/matching-service";
+import { computeMatchForApplicant, notifyIfHighMatch } from "@/lib/ai/matching-service";
 import { getProfileCompletion } from "@/lib/repositories/applicant-profile-repository";
 import { JobDetailContent } from "@/components/marketing/job-detail-content";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -45,6 +45,10 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
       if (computed) {
         await jobMatchRepository.upsert(job.id, account.id, computed.score, computed.breakdown);
         match = { score: computed.score, breakdown: computed.breakdown } as JobMatch;
+        await notifyIfHighMatch({
+          jobId: job.id, applicantId: account.id, score: computed.score,
+          jobTitle: job.title, companyName: job.companies?.name ?? null,
+        });
       }
     }
     if (match) {

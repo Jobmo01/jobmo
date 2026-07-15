@@ -11,6 +11,38 @@ import type { JobPosting } from "@/types/database.types";
 const MATCH_NOTIFICATION_THRESHOLD = 75;
 
 /**
+ * Fires the "you're a strong match" notification once a score crosses the
+ * threshold, guarded by the `notified` flag so it never double-sends.
+ * Shared between runMatchingForJob() (the one-time batch at publish time)
+ * and every on-demand match computation (Browse Jobs, the applicant
+ * dashboard, job detail pages) — previously only the batch job notified
+ * anyone, so an applicant whose match was computed on demand (because
+ * they registered after the job was published, or simply hadn't visited
+ * since) would see a high match score on screen but never get notified
+ * about it. This is now the single place that decision is made, called
+ * from every code path that can discover a high match.
+ */
+export async function notifyIfHighMatch(params: {
+  jobId: string; applicantId: string; score: number; jobTitle: string; companyName: string | null;
+}): Promise<boolean> {
+  if (params.score < MATCH_NOTIFICATION_THRESHOLD) return false;
+
+  const existing = await jobMatchRepository.getForApplicantAndJob(params.jobId, params.applicantId);
+  if (existing?.notified) return false;
+
+  const supabase = await createClient();
+  await (supabase.rpc as any)("create_notification", {
+    p_user_id: params.applicantId,
+    p_type: "job_match",
+    p_title: `You're a ${params.score}% match for ${params.jobTitle}`,
+    p_body: `${params.companyName ?? "An employer"} is hiring, and your profile lines up well — take a look.`,
+    p_link: `/dashboard/applicant/browse-jobs/${params.jobId}`,
+  });
+  await jobMatchRepository.markNotified(params.jobId, params.applicantId);
+  return true;
+}
+
+/**
  * Runs the matching algorithm for one job against every applicant profile
  * on the platform, stores the results, and notifies applicants who cross
  * the match threshold for the first time. Called when a job is published.
@@ -81,20 +113,8 @@ export async function runMatchingForJob(jobId: string): Promise<{ matched: numbe
       await jobMatchRepository.upsert(jobId, applicantId, score, breakdown);
       matched++;
 
-      if (score >= MATCH_NOTIFICATION_THRESHOLD) {
-        const existing = await jobMatchRepository.getForApplicantAndJob(jobId, applicantId);
-        if (!existing?.notified) {
-          await (supabase.rpc as any)("create_notification", {
-            p_user_id: applicantId,
-            p_type: "job_match",
-            p_title: `${score}% match: ${job.title}`,
-            p_body: `${company?.name ?? "An employer"} posted a role that fits your profile.`,
-            p_link: `/dashboard/applicant/browse-jobs/${jobId}`,
-          });
-          await jobMatchRepository.markNotified(jobId, applicantId);
-          notified++;
-        }
-      }
+      const didNotify = await notifyIfHighMatch({ jobId, applicantId, score, jobTitle: job.title, companyName: company?.name ?? null });
+      if (didNotify) notified++;
     } catch (e) {
       console.error(`Matching failed for applicant ${applicantId} on job ${jobId}:`, e);
       // Continue to the next applicant rather than aborting the whole batch.

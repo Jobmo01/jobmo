@@ -2,6 +2,24 @@ import { createClient } from "@/lib/supabase/server";
 import type { JobApplication, ApplicationNote, ApplicationStatusHistoryRow } from "@/types/database.types";
 
 export const applicationRepository = {
+  /** Access-control check for the employer-facing candidate profile page —
+   *  an employer should only be able to view an applicant's full profile
+   *  if that applicant has actually applied to one of their jobs (talent
+   *  pool membership is checked separately by the caller). Not "did they
+   *  apply to job X specifically" — any job at this company is enough,
+   *  since a candidate profile isn't tied to one application. */
+  async hasApplicantAppliedToCompany(applicantId: string, companyId: string): Promise<boolean> {
+    const supabase = await createClient();
+    const { data, error } = await (supabase.from("job_applications") as any)
+      .select("id, job_postings!inner ( company_id )")
+      .eq("applicant_id", applicantId)
+      .eq("job_postings.company_id", companyId)
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return Boolean(data);
+  },
+
   /** Lightweight — just status + applied_at (aliased to created_at for
    *  consistency with every other table's timestamp field name) across
    *  every job at a company, for dashboard charts. Not the heavy

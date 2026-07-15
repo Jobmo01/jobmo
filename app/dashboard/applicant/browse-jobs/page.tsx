@@ -2,7 +2,7 @@ import { jobRepository } from "@/lib/repositories/job-repository";
 import { profileRepository } from "@/lib/repositories/profile-repository";
 import { applicationRepository } from "@/lib/repositories/application-repository";
 import { jobMatchRepository } from "@/lib/repositories/job-match-repository";
-import { computeMatchesForApplicantAcrossJobs } from "@/lib/ai/matching-service";
+import { computeMatchesForApplicantAcrossJobs, notifyIfHighMatch } from "@/lib/ai/matching-service";
 import { BrowseJobsList } from "@/components/applicant/browse-jobs-list";
 
 export default async function BrowseJobsPage() {
@@ -24,6 +24,7 @@ export default async function BrowseJobsPage() {
   if (account?.role === "applicant") {
     const jobIds = jobs.map((j: any) => j.id);
     const existingMatches = await jobMatchRepository.listForApplicantAcrossJobs(account.id, jobIds);
+    const jobById = new Map(jobs.map((j: any) => [j.id, j]));
 
     const uncachedJobs = jobs.filter((j: any) => !existingMatches.has(j.id));
     if (uncachedJobs.length > 0) {
@@ -34,8 +35,26 @@ export default async function BrowseJobsPage() {
         }))
       );
       for (const [jobId, result] of computed) {
-        existingMatches.set(jobId, { score: result.score } as any);
+        existingMatches.set(jobId, { score: result.score, notified: false } as any);
       }
+    }
+
+    // Notify on every match crossing the threshold — both ones just
+    // computed above, and ones that were already cached from a previous
+    // visit but never got a notification (the bug this fix addresses:
+    // previously only publish-time matching could ever notify anyone, so
+    // real high matches discovered here on Browse Jobs were silently
+    // never announced). notifyIfHighMatch() is a no-op if already
+    // notified, so this is safe to call broadly — only costs a query for
+    // jobs actually crossing 75%, not the whole list.
+    for (const [jobId, m] of existingMatches) {
+      if ((m.score ?? 0) < 75) continue;
+      const job = jobById.get(jobId);
+      if (!job) continue;
+      await notifyIfHighMatch({
+        jobId, applicantId: account.id, score: m.score,
+        jobTitle: job.title, companyName: job.companies?.name ?? null,
+      });
     }
 
     jobsWithScores = jobs.map((job: any) => ({ ...job, matchScore: existingMatches.get(job.id)?.score ?? null }));

@@ -3,6 +3,50 @@
 Work through this after following the setup steps in `README.md`. Check off
 each item; anything that fails, note the exact steps to reproduce.
 
+## Match notifications, notification icons, company/candidate profile links
+
+- [ ] Post a new job as an employer whose required skills clearly match an
+      existing applicant's profile — check that applicant's notifications;
+      they should receive a match notification without needing to visit
+      Browse Jobs first
+- [ ] As an applicant, visit Browse Jobs and find any job showing 75%+
+      match that you haven't been notified about before — refresh the
+      page, then check Notifications; you should now see it
+- [ ] Confirm each notification type shows a distinct icon and color
+      (AI match, application update, interview, offer, system) — open
+      Notifications with a mix of types if you have them
+- [ ] On any job listing page, click the company name — should navigate to
+      that company's public profile
+- [ ] As an employer, open a candidate's pipeline card, click "View full
+      profile" — should show their complete profile, not just the summary
+- [ ] Try guessing a candidate profile URL for someone who has **not**
+      applied to any of your jobs and isn't in your talent pool — should
+      show "not found," not their profile
+
+## Google Login troubleshooting
+
+The code for this was reviewed and is correct — if "Continue with Google"
+isn't working, it's almost certainly one of these four settings, not a bug.
+Check them in this order:
+
+- [ ] **What actually happens when you click it?** This determines which
+      of the checks below matters — an error page from Google itself
+      points at #2; landing back on `/login?error=oauth_failed` points at
+      #1, #3, or #4.
+- [ ] **Supabase → Authentication → Providers → Google is enabled**, with a
+      real Client ID and Client Secret entered (from Google Cloud Console
+      → APIs & Services → Credentials)
+- [ ] **Google Cloud Console → your OAuth Client → Authorized redirect
+      URIs** includes `https://<your-supabase-project-ref>.supabase.co/auth/v1/callback`
+      exactly — this is the single most common cause of Google login
+      failing. Find your project ref in the Supabase dashboard URL.
+- [ ] **Vercel → Environment Variables → `NEXT_PUBLIC_SITE_URL`** is set to
+      `https://www.jobmo.lk` (not blank, not `localhost`, not the old
+      demo domain) — if this is wrong, Google login can silently redirect
+      to the wrong place after signing in
+- [ ] **Supabase → Authentication → URL Configuration → Redirect URLs**
+      includes `https://www.jobmo.lk/**`
+
 ## Reports export, applicant search/filters, homepage cleanup
 
 - [ ] Homepage no longer shows a search bar or "Search Jobs" button

@@ -6,7 +6,7 @@ import { applicationRepository } from "@/lib/repositories/application-repository
 import { interviewRepository } from "@/lib/repositories/interview-repository";
 import { jobRepository } from "@/lib/repositories/job-repository";
 import { jobMatchRepository } from "@/lib/repositories/job-match-repository";
-import { computeMatchesForApplicantAcrossJobs } from "@/lib/ai/matching-service";
+import { computeMatchesForApplicantAcrossJobs, notifyIfHighMatch } from "@/lib/ai/matching-service";
 import { quizRepository, certificateRepository } from "@/lib/repositories/quiz-repository";
 import { notificationsRepository } from "@/lib/repositories/notifications-repository";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,14 +41,29 @@ export default async function ApplicantDashboardPage() {
   let matchByJob = new Map<string, number>();
   if (latestJobs.length > 0) {
     const existing = await jobMatchRepository.listForApplicantAcrossJobs(profile.id, latestJobs.map((j: any) => j.id));
+    const jobById = new Map(latestJobs.map((j: any) => [j.id, j]));
     const uncached = latestJobs.filter((j: any) => !existing.has(j.id));
     if (uncached.length > 0) {
       const computed = await computeMatchesForApplicantAcrossJobs(profile.id, uncached as any);
       await jobMatchRepository.upsertMany(
         [...computed.entries()].map(([jobId, r]) => ({ jobId, applicantId: profile.id, score: r.score, breakdown: r.breakdown }))
       );
-      for (const [jobId, r] of computed) existing.set(jobId, { score: r.score } as any);
+      for (const [jobId, r] of computed) existing.set(jobId, { score: r.score, notified: false } as any);
     }
+
+    // Same fix as Browse Jobs: notify on any match crossing the threshold,
+    // whether just computed or previously cached but never announced —
+    // notifyIfHighMatch() is a no-op if already notified.
+    for (const [jobId, m] of existing) {
+      if ((m.score ?? 0) < 75) continue;
+      const job = jobById.get(jobId);
+      if (!job) continue;
+      await notifyIfHighMatch({
+        jobId, applicantId: profile.id, score: m.score,
+        jobTitle: job.title, companyName: job.companies?.name ?? null,
+      });
+    }
+
     matchByJob = new Map([...existing.entries()].map(([jobId, m]) => [jobId, m.score]));
   }
 
