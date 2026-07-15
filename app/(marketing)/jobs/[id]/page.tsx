@@ -60,11 +60,11 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
     };
   }
 
-  const jobUrl = `https://jobmo.lk/jobs/${job.id}`;
+  const jobUrl = `https://www.jobmo.lk/jobs/${job.id}`;
   const jobPostingSchema = buildJobPostingSchema(job, job.companies, jobUrl);
   const breadcrumbSchema = buildBreadcrumbSchema([
-    { name: "Home", url: "https://jobmo.lk" },
-    { name: "Jobs", url: "https://jobmo.lk/jobs" },
+    { name: "Home", url: "https://www.jobmo.lk" },
+    { name: "Jobs", url: "https://www.jobmo.lk/jobs" },
     { name: job.title, url: jobUrl },
   ]);
 

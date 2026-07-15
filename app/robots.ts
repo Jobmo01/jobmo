@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/dashboard/", "/api/", "/auth/"],
     },
-    sitemap: "https://jobmo.lk/sitemap.xml",
+    sitemap: "https://www.jobmo.lk/sitemap.xml",
   };
 }

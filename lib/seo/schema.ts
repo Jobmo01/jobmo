@@ -2,7 +2,7 @@ import type { JobPosting, Company } from "@/types/database.types";
 
 type JobPostingCompany = Pick<Company, "id" | "name" | "logo_url" | "locations">;
 
-const SITE_URL = "https://jobmo.lk";
+const SITE_URL = "https://www.jobmo.lk";
 const SITE_NAME = "JobMo";
 
 /**

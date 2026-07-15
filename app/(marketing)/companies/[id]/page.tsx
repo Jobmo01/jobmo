@@ -30,9 +30,9 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
     .order("published_at", { ascending: false });
 
   const breadcrumbSchema = buildBreadcrumbSchema([
-    { name: "Home", url: "https://jobmo.lk" },
-    { name: "Companies", url: "https://jobmo.lk/companies" },
-    { name: company.name, url: `https://jobmo.lk/companies/${company.id}` },
+    { name: "Home", url: "https://www.jobmo.lk" },
+    { name: "Companies", url: "https://www.jobmo.lk/companies" },
+    { name: company.name, url: `https://www.jobmo.lk/companies/${company.id}` },
   ]);
 
   return (

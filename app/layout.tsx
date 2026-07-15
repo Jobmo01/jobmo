@@ -28,7 +28,7 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://jobmo.lk"),
+  metadataBase: new URL("https://www.jobmo.lk"),
   title: {
     default: "JobMo — AI-Powered Hiring, Built for Sri Lanka",
     template: "%s | JobMo",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     title: "JobMo — AI-Powered Hiring, Built for Sri Lanka",
     description:
       "Matching applicants and employers with AI-driven precision.",
-    url: "https://jobmo.lk",
+    url: "https://www.jobmo.lk",
     siteName: "JobMo",
     locale: "en_LK",
     type: "website",

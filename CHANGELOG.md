@@ -148,6 +148,20 @@ of likely impact:
   afterward: `/register` now builds as a static page alongside all other
   65+ routes.
 
+## Fix — SEO code now matches the real live domain — 2026-07-15
+
+### Fixed
+- All SEO/structured-data code (JobPosting schema, sitemap, robots.txt,
+  Organization schema, breadcrumbs, metadata) used `https://jobmo.lk`
+  (no `www`) as a placeholder throughout. Once the real Vercel deployment
+  went live, it turned out the actual production address redirects
+  `jobmo.lk` → `www.jobmo.lk` (a normal, intentional setup — Vercel
+  redirects one to the other so there's a single canonical address).
+  Updated all 11 references across 6 files to `https://www.jobmo.lk` to
+  match what's actually live, so search engines see one consistent
+  address instead of following a redirect on every crawl. Verified with
+  a full typecheck, lint, test run, and production build afterward.
+
 ## SEO foundation — structured data, dynamic sitemap — 2026-07-15
 
 ### Added

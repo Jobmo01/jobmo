@@ -9,7 +9,7 @@ const staticRoutes = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = "https://jobmo.lk";
+  const base = "https://www.jobmo.lk";
 
   const staticEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
     url: `${base}/${route}`,
