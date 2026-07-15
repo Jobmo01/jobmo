@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { loginSchema, registerSchema, forgotPasswordSchema } from "@/lib/validations/auth";
+import { addContactToBrevo } from "@/lib/email/brevo";
 import { redirect } from "next/navigation";
 
 export type ActionState = { error?: string; success?: boolean } | null;
@@ -77,6 +78,18 @@ export async function registerAction(_prev: ActionState, formData: FormData): Pr
   if (error) {
     return { error: error.message };
   }
+
+  // Awaited deliberately, even though it never throws — on Vercel's
+  // serverless platform, a fire-and-forget network call can be killed
+  // mid-flight the moment this function returns, before it actually
+  // reaches Brevo. Awaiting it (its own internal try/catch already
+  // guarantees this never fails the registration itself) makes sure the
+  // sync genuinely completes rather than racing the response.
+  await addContactToBrevo({
+    email: parsed.data.email,
+    fullName: parsed.data.fullName,
+    role: parsed.data.accountType,
+  });
 
   if (data.user && !data.session) {
     return { success: true }; // email confirmation required

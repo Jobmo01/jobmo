@@ -128,6 +128,33 @@ of likely impact:
   anything), and real job search now lives inside the applicant dashboard
   per the earlier "simplify the marketing site" direction.
 
+## Added — automatic Brevo contact sync — 2026-07-15
+
+### Added
+- **Every new signup is now automatically added to Brevo** (the free
+  email marketing tool set up for the growth strategy's email phase),
+  split into an Applicants or Employers list by role — from both
+  registration paths (email/password and Google OAuth), so the Welcome/
+  onboarding automations built in Brevo's own UI can pick up new users
+  without any manual export step.
+- **Deliberately fail-safe by design**: if the Brevo API keys aren't
+  configured, or Brevo is briefly unreachable, or the request fails for
+  any reason, registration still succeeds normally — this is a marketing
+  side effect, not part of the actual signup flow, and a third-party
+  tool being down should never be able to block someone from creating a
+  JobMo account. Verified this directly: ran the sync function with no
+  credentials configured and with a deliberately invalid API key, and
+  confirmed it never throws either way.
+- Deliberately **awaited**, not fire-and-forget, despite never throwing —
+  on Vercel's serverless platform, an un-awaited network call can be
+  killed mid-flight the instant the response is sent, before it actually
+  reaches Brevo. Awaiting it guarantees the sync genuinely completes.
+- New optional environment variables: `BREVO_API_KEY`,
+  `BREVO_APPLICANT_LIST_ID`, `BREVO_EMPLOYER_LIST_ID` — documented in
+  both `README.md` and `.env.example`. None of these are required for
+  the app to function; omitting them just means new signups aren't
+  synced to Brevo yet.
+
 ## Fix — Google sign-up always created applicant accounts — 2026-07-15
 
 ### Fixed

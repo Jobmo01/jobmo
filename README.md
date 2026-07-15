@@ -304,6 +304,18 @@ improvement, salary suggestions, interview question generation) show a
 "AI features aren't set up yet" message until you add a key. There's no
 separate flag to toggle — adding the key is all that's needed.
 
+**To enable automatic Brevo contact sync** (adds every new signup to the
+matching marketing list in Brevo — see `CHANGELOG.md` for why this is
+deliberately fail-safe), set:
+```
+BREVO_API_KEY=xkeysib-...your real key...
+BREVO_APPLICANT_LIST_ID=...the numeric list ID from Brevo...
+BREVO_EMPLOYER_LIST_ID=...the numeric list ID from Brevo...
+```
+Without these, registration still works completely normally — the sync
+silently skips itself if any of the three are missing. No separate flag
+needed here either.
+
 ## 5. Install and run locally
 
 ```bash

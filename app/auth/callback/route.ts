@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { addContactToBrevo } from "@/lib/email/brevo";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
@@ -40,10 +41,23 @@ export async function GET(request: NextRequest) {
       }
 
       const { data: profile } = await (supabase.from("profiles") as any)
-        .select("role")
+        .select("role, full_name, email")
         .eq("id", data.user.id)
         .single();
       const role = profile?.role ?? "applicant";
+
+      if (isNewSignup) {
+        // Awaited for the same reason as the email/password path — see
+        // that call site's comment. Adds a small delay before the
+        // redirect, but guarantees the sync actually completes on
+        // serverless rather than racing it.
+        await addContactToBrevo({
+          email: profile?.email ?? data.user.email ?? "",
+          fullName: profile?.full_name ?? null,
+          role: role === "employer" ? "employer" : "applicant",
+        });
+      }
+
       return NextResponse.redirect(`${origin}/dashboard/${role === "super_admin" ? "admin" : role}`);
     }
   }
