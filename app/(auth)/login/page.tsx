@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { loginAction, signInWithGoogleAction } from "@/app/(auth)/actions";
 import { Input } from "@/components/ui/input";
@@ -17,7 +18,7 @@ function SubmitButton() {
 }
 
 export default function LoginPage() {
-  const [state, formAction] = useFormState(loginAction, null);
+  const [state, formAction] = useActionState(loginAction, null);
 
   return (
     <div>

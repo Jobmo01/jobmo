@@ -1,48 +1,58 @@
 import type { Metadata } from "next";
-import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
+import Image from "next/image";
 import { BadgeCheck } from "lucide-react";
+import { companyRepository } from "@/lib/repositories/company-repository";
+import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata: Metadata = {
   title: "Companies Hiring in Sri Lanka",
   description: "Browse verified employers hiring on JobMo.",
 };
 
-// Placeholder data — replaced by live employer profiles in Phase 3 (Employer Module).
-const COMPANIES = [
-  { name: "Dialog Axiata", industry: "Telecommunications", openRoles: 12, verified: true },
-  { name: "WSO2", industry: "Software", openRoles: 8, verified: true },
-  { name: "Sysco LABS", industry: "Retail Tech", openRoles: 5, verified: true },
-  { name: "Virtusa", industry: "IT Services", openRoles: 21, verified: true },
-  { name: "MAS Holdings", industry: "Apparel Manufacturing", openRoles: 6, verified: false },
-  { name: "Cargills", industry: "Retail", openRoles: 4, verified: true },
-];
+export default async function CompaniesPage() {
+  const companies = await companyRepository.listPublic();
 
-export default function CompaniesPage() {
   return (
     <div className="container py-16">
       <h1 className="font-display text-3xl font-semibold tracking-tight md:text-4xl">
         Companies hiring now
       </h1>
-      <p className="mt-2 text-muted-foreground">
-        Verified employers with active openings on JobMo.
-      </p>
+      <p className="mt-2 text-muted-foreground">Employers building their teams on JobMo.</p>
 
-      <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {COMPANIES.map((c) => (
-          <Card key={c.name} className="transition-shadow hover:shadow-md">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2">
-                <h2 className="font-display font-semibold">{c.name}</h2>
-                {c.verified && (
-                  <BadgeCheck className="h-4 w-4 text-primary" aria-label="Verified employer" />
-                )}
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">{c.industry}</p>
-              <p className="mt-4 text-sm font-medium text-accent">{c.openRoles} open roles</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {companies.length === 0 ? (
+        <div className="mt-10 rounded-lg border border-dashed border-border p-12 text-center text-sm text-muted-foreground">
+          No company profiles yet — check back soon.
+        </div>
+      ) : (
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {companies.map((c) => (
+            <Link key={c.id} href={`/companies/${c.id}`}>
+              <Card className="transition-shadow hover:shadow-md">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    {c.logo_url ? (
+                      <Image src={c.logo_url} alt={c.name} width={40} height={40} className="rounded-md object-cover" />
+                    ) : (
+                      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-secondary text-sm font-semibold">
+                        {c.name.charAt(0)}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5">
+                      <h2 className="font-display font-semibold">{c.name}</h2>
+                      {c.verification_status === "verified" && (
+                        <BadgeCheck className="h-4 w-4 text-primary" aria-label="Verified employer" />
+                      )}
+                    </div>
+                  </div>
+                  {c.tagline && <p className="mt-2 text-sm text-muted-foreground">{c.tagline}</p>}
+                  {c.industry && <p className="mt-3 text-xs text-muted-foreground">{c.industry}</p>}
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

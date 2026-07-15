@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Space_Grotesk, Inter, IBM_Plex_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Toaster } from "sonner";
+import { PwaRegister } from "@/components/pwa-register";
+import { JsonLd } from "@/components/seo/json-ld";
+import { buildOrganizationSchema } from "@/lib/seo/schema";
 import "./globals.css";
 
 const display = Space_Grotesk({
@@ -47,6 +50,7 @@ export const metadata: Metadata = {
     siteName: "JobMo",
     locale: "en_LK",
     type: "website",
+    images: [{ url: "/logo-full.png", width: 788, height: 292, alt: "JobMo" }],
   },
   robots: {
     index: true,
@@ -64,6 +68,13 @@ export default function RootLayout({
       <body
         className={`${display.variable} ${body.variable} ${mono.variable} font-body antialiased`}
       >
+        <JsonLd data={buildOrganizationSchema()} />
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground"
+        >
+          Skip to main content
+        </a>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -72,6 +83,7 @@ export default function RootLayout({
         >
           {children}
           <Toaster richColors position="top-right" closeButton />
+          <PwaRegister />
         </ThemeProvider>
       </body>
     </html>

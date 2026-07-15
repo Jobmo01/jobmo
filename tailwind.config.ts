@@ -47,9 +47,8 @@ const config: Config = {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
         },
-        gem: {
-          sapphire: "hsl(var(--gem-sapphire))",
-          gold: "hsl(var(--gem-gold))",
+        brand: {
+          blue: "hsl(var(--brand-blue))",
         },
       },
       borderRadius: {

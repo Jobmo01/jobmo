@@ -23,7 +23,7 @@ const STEPS = [
 
 export function HowItWorks() {
   return (
-    <section className="container py-20">
+    <section id="how-it-works" className="container scroll-mt-20 py-20">
       <div className="mx-auto max-w-xl text-center">
         <h2 className="font-display text-3xl font-semibold tracking-tight md:text-4xl">
           How JobMo works

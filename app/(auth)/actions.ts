@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { loginSchema, registerSchema, forgotPasswordSchema } from "@/lib/validations/auth";
 import { redirect } from "next/navigation";
@@ -16,15 +17,32 @@ export async function loginAction(_prev: ActionState, formData: FormData): Promi
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+
+  const { data: limited } = await (supabase.rpc as any)("is_login_rate_limited", { p_email: parsed.data.email });
+  if (limited) {
+    return { error: "Too many failed attempts. Please wait 15 minutes and try again." };
+  }
+
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
+    const headersList = await headers();
+    const ip = headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
+    await (supabase.rpc as any)("record_failed_login", { p_email: parsed.data.email, p_ip_address: ip });
     return { error: error.message === "Invalid login credentials"
       ? "Incorrect email or password."
       : error.message };
   }
 
-  redirect("/dashboard/applicant");
+  await (supabase.rpc as any)("clear_login_attempts", { p_email: parsed.data.email });
+
+  const { data: profile } = await (supabase.from("profiles") as any)
+    .select("role")
+    .eq("id", data.user.id)
+    .single();
+
+  const role = profile?.role ?? "applicant";
+  redirect(`/dashboard/${role === "super_admin" ? "admin" : role}`);
 }
 
 export async function registerAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -48,10 +66,9 @@ export async function registerAction(_prev: ActionState, formData: FormData): Pr
     options: {
       data: {
         full_name: parsed.data.fullName,
-        // Requested account type — the profile is created with role='applicant'
-        // by the DB trigger regardless; upgrading to 'employer' happens via the
-        // guarded admin_update_profile_role() RPC once company verification
-        // is added in Phase 3, never by trusting this client-supplied value directly.
+        // The handle_new_user() trigger (Phase 3) assigns role='employer'
+        // directly when this is 'employer' — verification (companies.
+        // verification_status) is the trust gate, not the role itself.
         requested_account_type: parsed.data.accountType,
       },
     },
@@ -65,7 +82,7 @@ export async function registerAction(_prev: ActionState, formData: FormData): Pr
     return { success: true }; // email confirmation required
   }
 
-  redirect("/dashboard/applicant");
+  redirect(parsed.data.accountType === "employer" ? "/dashboard/employer" : "/dashboard/applicant");
 }
 
 export async function forgotPasswordAction(_prev: ActionState, formData: FormData): Promise<ActionState> {

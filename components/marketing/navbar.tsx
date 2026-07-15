@@ -8,12 +8,13 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Logo } from "@/components/marketing/logo";
 
+// A handful of in-page anchors rather than separate pages — the whole
+// pitch fits on one landing page, so navigation should feel like scrolling
+// a single story, not hopping between a dozen marketing pages.
 const NAV_LINKS = [
-  { href: "/jobs", label: "Jobs" },
-  { href: "/companies", label: "Companies" },
-  { href: "/learning-center", label: "Learning Center" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/about", label: "About" },
+  { href: "/#job-seekers", label: "For Job Seekers" },
+  { href: "/#employers", label: "For Employers" },
+  { href: "/#how-it-works", label: "How it Works" },
 ];
 
 export function Navbar() {
@@ -36,7 +37,7 @@ export function Navbar() {
     >
       <nav className="container flex h-16 items-center justify-between" aria-label="Main">
         <Link href="/" className="flex items-center gap-2" aria-label="JobMo home">
-          <Logo className="h-7 w-7" />
+          <Logo className="h-8" />
           <span className="font-display text-lg font-semibold tracking-tight">JobMo</span>
         </Link>
 

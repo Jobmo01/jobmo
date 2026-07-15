@@ -13,6 +13,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           className
         )}
         ref={ref}
+        // See components/ui/button.tsx — same browser-extension attribute issue.
+        suppressHydrationWarning
         {...props}
       />
     );

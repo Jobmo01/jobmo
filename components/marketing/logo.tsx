@@ -1,19 +1,25 @@
 /**
- * Signature mark: a faceted gem cut — nods to Sri Lanka's gem-trading
- * heritage ("Ratna Dweepa", island of gems) while doubling as the same
- * hexagonal facet shape used for match-score indicators across the product.
- * One motif, two meanings — used sparingly, never as generic decoration.
+ * Renders the real JobMo brand mark (processed from the supplied logo file
+ * into an icon-only crop and a full icon+wordmark+tagline lockup).
+ * - variant="icon": magnifying-glass/briefcase mark only — for navbar,
+ *   footer, dashboard sidebar, and app icon contexts. Set height via
+ *   className; width follows automatically to preserve the aspect ratio.
+ * - variant="full": icon + "Jobmo" wordmark + tagline — for the auth
+ *   screens and anywhere the full lockup fits comfortably.
  */
-export function Logo({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
-      <polygon
-        points="16,1 29,8.5 29,23.5 16,31 3,23.5 3,8.5"
-        className="fill-primary"
-      />
-      <polygon points="16,1 29,8.5 16,16 3,8.5" className="fill-accent" opacity="0.9" />
-      <polygon points="16,16 29,8.5 29,23.5" className="fill-primary" opacity="0.75" />
-      <polygon points="16,16 3,8.5 3,23.5" className="fill-primary" opacity="0.55" />
-    </svg>
-  );
+export function Logo({
+  className,
+  variant = "icon",
+}: {
+  className?: string;
+  variant?: "icon" | "full";
+}) {
+  const src = variant === "full" ? "/logo-full.png" : "/logo-icon.png";
+  const alt = variant === "full" ? "JobMo — Find Your Next Opportunity" : "JobMo";
+
+  // Plain <img> rather than next/image: the asset is small, used at a handful
+  // of fixed spots (nav, footer, sidebar, auth), and this avoids next/image's
+  // required width/height when the display size varies by className alone.
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={src} alt={alt} className={`w-auto object-contain ${className ?? ""}`} />;
 }

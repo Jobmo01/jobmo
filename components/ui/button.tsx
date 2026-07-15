@@ -46,6 +46,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
+        // Browser extensions (password managers, form-fillers) inject
+        // attributes like fdprocessedid into buttons/inputs before React
+        // hydrates. That's an external DOM mutation, not a real mismatch —
+        // see https://nextjs.org/docs/messages/react-hydration-error
+        suppressHydrationWarning
         {...props}
       />
     );

@@ -12,9 +12,14 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return NextResponse.redirect(`${origin}/dashboard/applicant`);
+      const { data: profile } = await (supabase.from("profiles") as any)
+        .select("role")
+        .eq("id", data.user.id)
+        .single();
+      const role = profile?.role ?? "applicant";
+      return NextResponse.redirect(`${origin}/dashboard/${role === "super_admin" ? "admin" : role}`);
     }
   }
 

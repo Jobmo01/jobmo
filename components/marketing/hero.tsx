@@ -2,9 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ArrowRight } from "lucide-react";
 
 export function Hero() {
   return (
@@ -30,22 +28,7 @@ export function Hero() {
             only on the people who do.
           </p>
 
-          <form className="mt-8 flex max-w-md flex-col gap-3 sm:flex-row" role="search">
-            <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Job title, skill, or company"
-                className="pl-9"
-                aria-label="Search jobs"
-              />
-            </div>
-            <Button type="submit" size="default">
-              Search Jobs
-            </Button>
-          </form>
-
-          <div className="mt-6 flex items-center gap-6 text-sm text-muted-foreground">
+          <div className="mt-8 flex items-center gap-6 text-sm text-muted-foreground">
             <Link href="/register" className="inline-flex items-center gap-1 font-medium text-foreground hover:text-primary">
               Create your profile <ArrowRight className="h-3.5 w-3.5" />
             </Link>
@@ -62,7 +45,7 @@ export function Hero() {
           className="relative mx-auto flex h-72 w-72 items-center justify-center md:h-96 md:w-96"
           aria-hidden="true"
         >
-          <div className="facet-clip absolute inset-0 animate-facet-in bg-gradient-to-br from-primary to-primary/70" />
+          <div className="facet-clip bg-brand-gradient absolute inset-0 animate-facet-in" />
           <div className="facet-clip-sm absolute inset-6 flex flex-col items-center justify-center bg-background text-center">
             <span className="font-mono text-5xl font-medium text-primary md:text-6xl">92%</span>
             <span className="mt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">

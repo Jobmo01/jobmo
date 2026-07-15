@@ -21,7 +21,7 @@ const TESTIMONIALS = [
 
 export function Testimonials() {
   return (
-    <section className="bg-primary py-20 text-primary-foreground">
+    <section className="bg-brand-gradient py-20 text-primary-foreground">
       <div className="container">
         <h2 className="text-center font-display text-3xl font-semibold tracking-tight md:text-4xl">
           Trusted by hiring teams and job seekers alike
