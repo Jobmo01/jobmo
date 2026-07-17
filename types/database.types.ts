@@ -174,6 +174,7 @@ export interface ApplicantProfile {
   ai_summary_generated_at: string | null;
   resume_score: number | null;
   resume_score_feedback: Json;
+  abandoned_reminder_sent_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -216,6 +217,7 @@ export interface Company {
   gallery_urls: string[];
   video_url: string | null;
   verification_status: VerificationStatus;
+  last_follow_up_email_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -293,6 +295,7 @@ export interface Interview {
   instructions: string | null;
   status: InterviewStatus;
   applicant_response_note: string | null;
+  reminder_sent_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -333,6 +336,7 @@ export interface JobMatch {
   score: number;
   breakdown: MatchBreakdown;
   notified: boolean;
+  email_reminded_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -618,7 +622,7 @@ export interface Database {
       };
       companies: {
         Row: Company;
-        Insert: Omit<Company, "id" | "created_at" | "updated_at" | "verification_status"> & { verification_status?: VerificationStatus };
+        Insert: Omit<Company, "id" | "created_at" | "updated_at" | "verification_status" | "last_follow_up_email_at"> & { verification_status?: VerificationStatus };
         Update: Partial<Omit<Company, "id" | "owner_id" | "created_at" | "updated_at">>;
         Relationships: [];
       };
@@ -648,7 +652,7 @@ export interface Database {
       };
       interviews: {
         Row: Interview;
-        Insert: Omit<Interview, "id" | "created_at" | "updated_at" | "status" | "applicant_response_note"> & { status?: InterviewStatus };
+        Insert: Omit<Interview, "id" | "created_at" | "updated_at" | "status" | "applicant_response_note" | "reminder_sent_at"> & { status?: InterviewStatus };
         Update: Partial<Omit<Interview, "id" | "application_id" | "created_at" | "updated_at">>;
         Relationships: [];
       };
@@ -660,8 +664,8 @@ export interface Database {
       };
       job_matches: {
         Row: JobMatch;
-        Insert: Omit<JobMatch, "id" | "created_at" | "updated_at" | "notified"> & { notified?: boolean };
-        Update: Partial<Pick<JobMatch, "score" | "breakdown" | "notified">>;
+        Insert: Omit<JobMatch, "id" | "created_at" | "updated_at" | "notified" | "email_reminded_at"> & { notified?: boolean };
+        Update: Partial<Pick<JobMatch, "score" | "breakdown" | "notified" | "email_reminded_at">>;
         Relationships: [];
       };
       learning_categories: {

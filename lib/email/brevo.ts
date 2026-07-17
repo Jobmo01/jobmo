@@ -44,3 +44,36 @@ export async function addContactToBrevo(params: {
     console.error("Brevo contact sync failed (non-fatal):", e);
   }
 }
+
+/**
+ * Updates custom attributes on an existing Brevo contact — this is how the
+ * 4 data-driven reminders (abandoned profile, high match, interview,
+ * employer follow-up) notify Brevo, since Brevo has no way to know about
+ * things happening inside JobMo on its own.
+ *
+ * Deliberately uses the same contacts endpoint as addContactToBrevo()
+ * (attribute updates) rather than Brevo's newer custom-events API —
+ * "contact attribute updated" is a long-established, reliable Brevo
+ * automation trigger; there are multiple reports in Brevo's own community
+ * forum of API-created custom events not reliably firing automations,
+ * which isn't a risk worth taking for something meant to run unattended
+ * every day. Same fail-safe contract as addContactToBrevo(): never throws,
+ * silently no-ops if not configured.
+ */
+export async function updateBrevoContactAttributes(email: string, attributes: Record<string, string | number | boolean>): Promise<void> {
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) return;
+
+  try {
+    await fetch(`https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": apiKey,
+      },
+      body: JSON.stringify({ attributes }),
+    });
+  } catch (e) {
+    console.error("Brevo attribute update failed (non-fatal):", e);
+  }
+}

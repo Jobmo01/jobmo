@@ -128,6 +128,54 @@ of likely impact:
   anything), and real job search now lives inside the applicant dashboard
   per the earlier "simplify the marketing site" direction.
 
+## Added — data-driven email reminders (Part 2) — 2026-07-17
+
+### Added
+- **4 new automated reminder conditions**, checked once daily by a new
+  cron job (`/api/cron/email-reminders`, scheduled via `vercel.json`) —
+  each notifies Brevo by updating contact attributes, which Brevo's own
+  automation editor then watches to send the actual email (same "app
+  detects, Brevo sends" split used for the earlier signup sync):
+  - **Abandoned profile** — account 3+ days old, still incomplete, never
+    reminded before
+  - **High match, not applied** — 75%+ match on a still-published job,
+    no application yet, the email echo of the existing in-app
+    notification
+  - **Interview reminder** — interview scheduled roughly 24 hours out
+  - **Employer follow-up** — applications sitting unreviewed 3+ days,
+    grouped per company, rate-limited to once a week so it nudges rather
+    than nags
+- Each condition tracks its own "already reminded" state (new columns:
+  `applicant_profiles.abandoned_reminder_sent_at`,
+  `job_matches.email_reminded_at`, `interviews.reminder_sent_at`,
+  `companies.last_follow_up_email_at`) so nothing gets sent twice — an
+  applicant stuck at 80% for two weeks gets one nudge, not fourteen.
+- Deliberately uses **contact attribute updates** rather than Brevo's
+  newer custom-events API for triggering these — "attribute updated" is
+  a long-established, reliable Brevo automation trigger; there are
+  multiple reports in Brevo's own community forum of API-created custom
+  events not reliably firing automations, not a risk worth taking for
+  something meant to run completely unattended every day.
+- **Uses the service-role Supabase client** (already scaffolded earlier,
+  never used until now) rather than the normal cookie-bound client —
+  necessary because a cron invocation has no logged-in user, so every
+  RLS policy in the app (all written around an authenticated session)
+  would otherwise block it from reading almost anything.
+- The profile-completion check duplicates (rather than reuses)
+  `getProfileCompletion()`'s logic, deliberately — that function always
+  builds its own cookie-bound client internally, which would hit the
+  same RLS problem in a cron context, and threading a client parameter
+  through it and everything it internally calls would touch several
+  already-working call sites for a fairly small piece of logic. Verified
+  the duplicated version directly with a standalone test against 5
+  scenarios (fully N/A, missing personal details, fully real entries,
+  one of six extras missing, insufficient skill count) before trusting
+  it to decide who gets an email.
+- New environment variable `CRON_SECRET` — protects the reminder route
+  from being triggered by anyone who finds the URL; Vercel automatically
+  sends it back as an `Authorization` header for its own scheduled calls
+  once set.
+
 ## Added — Google Analytics — 2026-07-15
 
 ### Added

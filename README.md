@@ -244,7 +244,7 @@ is the complete platform as originally scoped.
 
 Go to **Supabase Dashboard → SQL Editor → New query**.
 
-Run these twenty-three migrations **in order**, naming each query as shown:
+Run these twenty-four migrations **in order**, naming each query as shown:
 
 1. `supabase/migrations/0001_init_schema.sql` → name it **`phase1_init_schema`**
 2. `supabase/migrations/0002_rls_policies.sql` → name it **`phase1_rls_policies`**
@@ -269,6 +269,7 @@ Run these twenty-three migrations **in order**, naming each query as shown:
 21. `supabase/migrations/0021_profile_section_na_flags.sql` → name it **`profile_section_na_flags`**
 22. `supabase/migrations/0022_profile_extras_individual_na_flags.sql` → name it **`profile_extras_individual_na_flags`**
 23. `supabase/migrations/0023_talent_pool_and_targeting_schema.sql` → name it **`talent_pool_and_targeting_schema`**
+24. `supabase/migrations/0024_email_reminder_tracking.sql` → name it **`email_reminder_tracking`**
 
 Supabase's SQL Editor may warn that `0007` "creates tables without enabling
 Row Level Security" — that's expected and safe here: schema and RLS are
@@ -315,6 +316,17 @@ BREVO_EMPLOYER_LIST_ID=...the numeric list ID from Brevo...
 Without these, registration still works completely normally — the sync
 silently skips itself if any of the three are missing. No separate flag
 needed here either.
+
+**To secure the daily email-reminder cron job**, set:
+```
+CRON_SECRET=any-random-string-you-pick
+```
+Pick any random value (a password generator works fine) — this isn't
+something Vercel hands you, you choose it yourself, then Vercel
+automatically sends it back as an `Authorization` header on its own
+scheduled calls to `/api/cron/email-reminders`. Without this set, the
+route still works but isn't protected from being triggered by anyone
+who finds the URL.
 
 ## 5. Install and run locally
 
