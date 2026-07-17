@@ -11,7 +11,7 @@ export default function TermsPage() {
     <LegalPageLayout
       title="Terms of Service"
       description="The terms that govern your use of JobMo."
-      lastUpdated="14 July 2026"
+      lastUpdated="17 July 2026"
     >
       <div className="rounded-lg border border-accent/30 bg-accent/5 p-4 text-sm text-muted-foreground">
         <strong className="text-foreground">A note before you rely on this:</strong> this is a good-faith
@@ -66,6 +66,12 @@ export default function TermsPage() {
           <li>Handle applicant data (including any documents shared during the hiring process) responsibly and only for recruitment purposes</li>
           <li>Complete the company verification process honestly — verification badges are a signal of legitimacy, not a JobMo guarantee</li>
         </ul>
+        <p>
+          JobMo automatically awards a job-boost credit (which prioritizes one listing at the top of search
+          results) for every 3 genuine jobs a company posts. <strong>Posting fake, placeholder, or
+          duplicate job listings to accumulate boost credits is a violation of these terms</strong> and will
+          result in the company&apos;s account being permanently banned from the platform.
+        </p>
       </section>
 
       <section>

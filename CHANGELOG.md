@@ -128,6 +128,73 @@ of likely impact:
   anything), and real job search now lives inside the applicant dashboard
   per the earlier "simplify the marketing site" direction.
 
+## Added — referral program (Talent Scout badge) and employer job-boost credits — 2026-07-17
+
+### Added
+- **Candidate referrals**: every applicant gets a unique shareable link
+  (`jobmo.lk/register?ref=CODE`, generated lazily the first time they open
+  the new "Refer friends" section on their dashboard, not upfront for
+  every signup). Refer 3 people who successfully register through it and
+  earn a **Talent Scout** badge — shown on their own dashboard and on the
+  employer-facing candidate profile page as a trust signal. Reused the
+  generic `ShareButton` built for job sharing (see below) rather than
+  building a second share dialog from scratch.
+- **Referral crediting is genuinely non-trivial and handled carefully**:
+  a referral can only be recorded once a real session exists for the
+  referred person, but that isn't always true immediately after
+  email/password signup — if email confirmation is required, there's no
+  session until they click the link and log in for the first time.
+  Solved with a `pending_referral_code` column, captured at signup via
+  the same `requested_account_type` metadata pattern already used for
+  role assignment, credited either immediately (if no confirmation is
+  needed) or at first login (if it is) — whichever comes first. Google
+  OAuth doesn't need this at all: that flow always has a real session
+  the instant the callback runs, so it credits directly, the same way
+  the account-type selection already does.
+- **Employer job-boost credits**: 1 free credit automatically for every
+  3 genuine jobs a company has ever published (checked right after each
+  publish, non-fatal if it fails — same defensive pattern as the
+  existing match-notification step in that same action). Redeemable on
+  any published job to move it to the top of all public listings for as
+  long as it stays published. Explicit ban warning added to the **Terms
+  of Service** and shown directly in the employer's Jobs page: posting
+  fake or placeholder listings to farm credits is a bannable offense,
+  not just a discouraged practice.
+- **New generic `ShareButton` component** — copy link, WhatsApp, email,
+  plus native OS share where supported. The job-specific share button
+  built earlier this session was refactored into a thin wrapper around
+  this, rather than duplicating the whole dialog for referral links.
+- New schema: `profiles.referral_code` / `pending_referral_code`,
+  `referrals` table (RLS: insert scoped to your own id as the referred
+  person, select scoped to referrals you personally made),
+  `companies.boost_credits`, `job_postings.is_boosted`.
+- **No leaderboard was built for this** — deliberately left out per
+  explicit direction; a different gamification approach is planned
+  separately later.
+- Verified the two riskiest pieces of pure logic directly before
+  trusting them: referral code generation (1,000 generated, zero
+  collisions, correct format/alphabet) and the "award a credit every
+  3rd published job" milestone math (tested against 3, 6, 9 and several
+  non-multiples).
+
+## Added — share this job — 2026-07-17
+
+### Added
+- **"Share" button on job listings** — copy link, WhatsApp, and email, the
+  three channels explicitly wanted, plus a native OS share sheet on
+  devices that support it (mobile browsers mostly). Reuses the existing
+  `Dialog` component rather than adding a new dropdown-menu primitive to
+  the design system for one feature.
+- The shared link always points to the **public** job page
+  (`/jobs/[id]`), even when shared from the in-dashboard version — a
+  friend clicking the link almost certainly isn't logged in, so sending
+  them to a `/dashboard` route would just bounce them to a login page
+  first instead of the job itself.
+- Native-share detection is done inside a `useEffect`, not directly
+  during render — checking `navigator.share` in the render body risks a
+  server/client hydration mismatch, since `navigator` behaves differently
+  in Next.js's server-rendered pass than in the real browser.
+
 ## Added — data-driven email reminders (Part 2) — 2026-07-17
 
 ### Added

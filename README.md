@@ -244,7 +244,7 @@ is the complete platform as originally scoped.
 
 Go to **Supabase Dashboard → SQL Editor → New query**.
 
-Run these twenty-four migrations **in order**, naming each query as shown:
+Run these twenty-five migrations **in order**, naming each query as shown:
 
 1. `supabase/migrations/0001_init_schema.sql` → name it **`phase1_init_schema`**
 2. `supabase/migrations/0002_rls_policies.sql` → name it **`phase1_rls_policies`**
@@ -270,6 +270,7 @@ Run these twenty-four migrations **in order**, naming each query as shown:
 22. `supabase/migrations/0022_profile_extras_individual_na_flags.sql` → name it **`profile_extras_individual_na_flags`**
 23. `supabase/migrations/0023_talent_pool_and_targeting_schema.sql` → name it **`talent_pool_and_targeting_schema`**
 24. `supabase/migrations/0024_email_reminder_tracking.sql` → name it **`email_reminder_tracking`**
+25. `supabase/migrations/0025_referrals_and_job_boosts.sql` → name it **`referrals_and_job_boosts`**
 
 Supabase's SQL Editor may warn that `0007` "creates tables without enabling
 Row Level Security" — that's expected and safe here: schema and RLS are

@@ -3,6 +3,38 @@
 Work through this after following the setup steps in `README.md`. Check off
 each item; anything that fails, note the exact steps to reproduce.
 
+## Referral program and job-boost credits
+
+- [ ] Run migration `0025_referrals_and_job_boosts.sql`
+- [ ] As an applicant, open the dashboard Overview — confirm a "Refer
+      friends" card appears with a share button and a "0 of 3" progress bar
+- [ ] Click "Share your link," copy it, then open it in an incognito/
+      private window and register a brand-new account through it (try
+      both email/password and Google, in separate tests)
+- [ ] After that new account is confirmed and logged in at least once,
+      go back to the referrer's dashboard — progress should now show "1
+      of 3"
+- [ ] Repeat with 2 more referred signups — on the 3rd, confirm the card
+      switches to showing the "Talent Scout" badge instead of the
+      progress bar
+- [ ] As an employer who has referred candidates in their pipeline or
+      talent pool, open one of those candidate profiles — if that
+      candidate has 3+ referrals, confirm the Talent Scout badge shows
+      next to their name
+- [ ] As an employer, publish jobs until you hit your 3rd, 6th, or 9th
+      published job (draft jobs and jobs that were only ever saved as
+      drafts don't count) — confirm a "boost credit" banner appears on
+      the Jobs page
+- [ ] Click "Boost this job" on any published listing, confirm the
+      dialog warns it's irreversible, confirm it, and check that a
+      "Boosted" badge now shows on that job
+- [ ] Visit Browse Jobs (or the public /jobs page) as an applicant —
+      confirm the boosted job appears at the very top of the list,
+      above jobs published more recently
+- [ ] Confirm the Terms of Service page mentions the boost-credit ban
+      policy, and that the same warning text shows directly on the
+      employer Jobs page
+
 ## Match notifications, notification icons, company/candidate profile links
 
 - [ ] Post a new job as an employer whose required skills clearly match an

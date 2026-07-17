@@ -70,12 +70,15 @@ export const jobRepository = {
     return count ?? 0;
   },
 
-  /** Public job board — published jobs only, per RLS. */
+  /** Public job board — published jobs only, per RLS. Boosted jobs sort
+   *  first (the whole point of redeeming a boost credit), newest-first
+   *  within each group. */
   async listPublished(limit = 50): Promise<(JobPosting & { companies: { name: string; logo_url: string | null } | null })[]> {
     const supabase = await createClient();
     const { data, error } = await (supabase.from("job_postings") as any)
       .select("*, companies ( name, logo_url )")
       .eq("status", "published")
+      .order("is_boosted", { ascending: false })
       .order("published_at", { ascending: false })
       .limit(limit);
     if (error) throw error;

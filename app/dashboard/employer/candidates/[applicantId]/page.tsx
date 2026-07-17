@@ -6,6 +6,7 @@ import { profileRepository } from "@/lib/repositories/profile-repository";
 import { companyRepository } from "@/lib/repositories/company-repository";
 import { applicationRepository } from "@/lib/repositories/application-repository";
 import { talentPoolRepository } from "@/lib/repositories/talent-pool-repository";
+import { referralRepository } from "@/lib/repositories/referral-repository";
 import {
   applicantProfileRepository, educationRepository, experienceRepository, skillsRepository,
   certificationsRepository, projectsRepository, awardsRepository, volunteerRepository,
@@ -38,7 +39,7 @@ export default async function CandidateProfilePage({ params }: { params: Promise
   if (!applicantProfileRow) notFound();
 
   const [
-    profile, education, experience, skills, certifications, projects, awards, volunteer, languages, hobbies, references,
+    profile, education, experience, skills, certifications, projects, awards, volunteer, languages, hobbies, references, referralCount,
   ] = await Promise.all([
     applicantProfileRepository.get(applicantId),
     educationRepository.list(applicantId),
@@ -51,6 +52,7 @@ export default async function CandidateProfilePage({ params }: { params: Promise
     languagesRepository.list(applicantId),
     hobbiesRepository.list(applicantId),
     referencesRepository.list(applicantId),
+    referralRepository.countReferrals(applicantId),
   ]);
 
   return (
@@ -60,7 +62,12 @@ export default async function CandidateProfilePage({ params }: { params: Promise
       </Link>
 
       <div>
-        <h1 className="font-display text-2xl font-semibold">{applicantProfileRow.full_name ?? "Applicant"}</h1>
+        <h1 className="inline-flex items-center gap-2 font-display text-2xl font-semibold">
+          {applicantProfileRow.full_name ?? "Applicant"}
+          {referralCount >= 3 && (
+            <Badge variant="accent" className="gap-1"><Award className="h-3 w-3" /> Talent Scout</Badge>
+          )}
+        </h1>
         <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-1"><Mail className="h-3.5 w-3.5" /> {applicantProfileRow.email}</span>
           {profile?.phone && <span className="inline-flex items-center gap-1"><Phone className="h-3.5 w-3.5" /> {profile.phone}</span>}

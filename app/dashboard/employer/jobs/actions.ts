@@ -101,9 +101,20 @@ export async function updateJobAction(jobId: string, input: unknown): Promise<Jo
 
 export async function publishJobAction(jobId: string): Promise<JobActionResult> {
   try {
+    const job = await jobRepository.getById(jobId);
+    if (!job) return { error: "Job not found" };
+
     await jobRepository.update(jobId, { status: "published", published_at: new Date().toISOString() });
     revalidatePath("/dashboard/employer/jobs");
     revalidatePath("/jobs");
+
+    // Non-fatal by design, same reasoning as the matching call below —
+    // a boost-credit bookkeeping hiccup should never block a publish.
+    try {
+      await companyRepository.checkAndAwardBoostCredit(job.company_id);
+    } catch (e) {
+      console.error("Boost credit check failed for job", jobId, e);
+    }
 
     // Awaited deliberately: serverless functions (Netlify) can terminate
     // once a response is sent, so unawaited "background" work here could
@@ -170,5 +181,26 @@ export async function deleteJobAction(jobId: string): Promise<JobActionResult> {
     return { success: true };
   } catch (e) {
     return { error: getErrorMessage(e, "Failed to delete job") };
+  }
+}
+
+/** Spends one earned boost credit to prioritize a specific job — the
+ *  employer picks which job, since a credit is generic, not tied to any
+ *  one posting when it's earned. */
+export async function redeemBoostAction(jobId: string): Promise<JobActionResult> {
+  try {
+    const profile = await profileRepository.getCurrent();
+    if (!profile) throw new Error("Not authenticated");
+    const company = await companyRepository.getByOwner(profile.id);
+    if (!company) throw new Error("No company found");
+
+    const result = await companyRepository.redeemBoostCredit(company.id, jobId);
+    if (result.error) return { error: result.error };
+
+    revalidatePath("/dashboard/employer/jobs");
+    revalidatePath("/jobs");
+    return { success: true };
+  } catch (e) {
+    return { error: getErrorMessage(e, "Failed to boost job") };
   }
 }

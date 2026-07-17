@@ -25,6 +25,7 @@ export function RegisterForm() {
   const [accountType, setAccountType] = useState<"applicant" | "employer">(
     searchParams.get("type") === "employer" ? "employer" : "applicant"
   );
+  const referralCode = searchParams.get("ref") ?? undefined;
   const [state, formAction] = useActionState(registerAction, null);
 
   if (state?.success) {
@@ -63,7 +64,7 @@ export function RegisterForm() {
         ))}
       </div>
 
-      <form action={signInWithGoogleAction.bind(null, accountType)} className="mt-6">
+      <form action={signInWithGoogleAction.bind(null, accountType, referralCode)} className="mt-6">
         <Button type="submit" variant="outline" className="w-full">
           Continue with Google
         </Button>
@@ -77,6 +78,7 @@ export function RegisterForm() {
 
       <form action={formAction} className="space-y-4">
         <input type="hidden" name="accountType" value={accountType} />
+        {referralCode && <input type="hidden" name="referralCode" value={referralCode} />}
 
         <div className="space-y-1.5">
           <Label htmlFor="fullName">Full name</Label>

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { addContactToBrevo } from "@/lib/email/brevo";
+import { referralRepository } from "@/lib/repositories/referral-repository";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const requestedType = searchParams.get("type");
+  const referralCode = searchParams.get("ref");
 
   if (code) {
     const supabase = await createClient();
@@ -38,6 +40,13 @@ export async function GET(request: NextRequest) {
           .update({ role: "employer" })
           .eq("id", data.user.id)
           .eq("role", "applicant"); // never overwrite an already-established role
+      }
+
+      if (isNewSignup && referralCode) {
+        const referrerId = await referralRepository.findReferrerIdByCode(referralCode);
+        if (referrerId) {
+          await referralRepository.recordReferral(referrerId, data.user.id);
+        }
       }
 
       const { data: profile } = await (supabase.from("profiles") as any)

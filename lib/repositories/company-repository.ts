@@ -71,6 +71,56 @@ export const companyRepository = {
     return data as Company;
   },
 
+  /**
+   * Checked right after a job is published — if the company has now
+   * published a number of jobs that's a fresh multiple of 3, award one
+   * boost credit. Counts jobs that have ever been published
+   * (published_at is set), not just currently-published ones, since a
+   * job that was posted and later closed still counts as "a real job
+   * they posted."
+   */
+  async checkAndAwardBoostCredit(companyId: string): Promise<void> {
+    const supabase = await createClient();
+    const { count } = await (supabase.from("job_postings") as any)
+      .select("*", { count: "exact", head: true })
+      .eq("company_id", companyId)
+      .not("published_at", "is", null);
+
+    if (count && count > 0 && count % 3 === 0) {
+      const { data: company } = await (supabase.from("companies") as any)
+        .select("boost_credits")
+        .eq("id", companyId)
+        .maybeSingle();
+      await (supabase.from("companies") as any)
+        .update({ boost_credits: (company?.boost_credits ?? 0) + 1 })
+        .eq("id", companyId);
+    }
+  },
+
+  /** Redeems one credit to mark a job as boosted — the actual sort-to-top
+   *  happens in job listing queries, not here. */
+  async redeemBoostCredit(companyId: string, jobId: string): Promise<{ error?: string }> {
+    const supabase = await createClient();
+    const { data: company } = await (supabase.from("companies") as any)
+      .select("boost_credits")
+      .eq("id", companyId)
+      .maybeSingle();
+    if (!company || company.boost_credits < 1) {
+      return { error: "No boost credits available" };
+    }
+
+    const { error: jobError } = await (supabase.from("job_postings") as any)
+      .update({ is_boosted: true })
+      .eq("id", jobId)
+      .eq("company_id", companyId); // can only boost your own job
+    if (jobError) return { error: jobError.message };
+
+    await (supabase.from("companies") as any)
+      .update({ boost_credits: company.boost_credits - 1 })
+      .eq("id", companyId);
+    return {};
+  },
+
   /** Public directory listing — used by the /companies marketing page. */
   async listPublic(limit = 30): Promise<Company[]> {
     const supabase = await createClient();

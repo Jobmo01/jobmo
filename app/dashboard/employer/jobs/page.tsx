@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Users } from "lucide-react";
+import { Plus, Users, Rocket } from "lucide-react";
 import { profileRepository } from "@/lib/repositories/profile-repository";
 import { companyRepository } from "@/lib/repositories/company-repository";
 import { jobRepository } from "@/lib/repositories/job-repository";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { JobRowActions } from "@/components/employer/job-row-actions";
+import { BoostJobButton } from "@/components/employer/boost-job-button";
 
 const STATUS_VARIANT: Record<string, "outline" | "success" | "secondary" | "destructive"> = {
   draft: "outline",
@@ -57,6 +58,28 @@ export default async function EmployerJobsPage() {
         </Button>
       </div>
 
+      {company.boost_credits > 0 && (
+        <Card className="border-accent/40 bg-accent/5">
+          <CardContent className="flex items-center gap-3 p-4">
+            <Rocket className="h-5 w-5 text-accent" />
+            <div>
+              <p className="font-medium">
+                You have {company.boost_credits} boost credit{company.boost_credits === 1 ? "" : "s"} available
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Earned automatically for every 3 real jobs you post. Use &quot;Boost this job&quot; below on any
+                published listing to move it to the top of all job listings.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <p className="text-xs text-muted-foreground">
+        Boost credits are earned for genuinely posting jobs, not for gaming the count — accounts found posting
+        fake or placeholder listings to farm credits will be banned and permanently barred from JobMo.
+      </p>
+
       {jobs.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border p-12 text-center">
           <p className="text-sm text-muted-foreground">No jobs posted yet.</p>
@@ -70,12 +93,15 @@ export default async function EmployerJobsPage() {
                   <div className="flex items-center gap-2">
                     <h2 className="font-display font-semibold">{job.title}</h2>
                     <Badge variant={STATUS_VARIANT[job.status]}>{STATUS_LABEL[job.status]}</Badge>
+                    {job.is_boosted && (
+                      <Badge variant="accent" className="gap-1"><Rocket className="h-3 w-3" /> Boosted</Badge>
+                    )}
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {job.work_type ?? "—"} • {job.employment_type?.replace("_", " ") ?? "—"}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Button variant="outline" size="sm" asChild>
                     <Link href={`/dashboard/employer/jobs/${job.id}/pipeline`}>
                       <Users className="h-4 w-4" /> {applicantCounts[i] ?? 0} applicants
@@ -84,6 +110,9 @@ export default async function EmployerJobsPage() {
                   <Button variant="outline" size="sm" asChild>
                     <Link href={`/dashboard/employer/jobs/${job.id}/edit`}>Edit</Link>
                   </Button>
+                  {job.status === "published" && !job.is_boosted && (
+                    <BoostJobButton jobId={job.id} jobTitle={job.title} creditsAvailable={company.boost_credits} />
+                  )}
                   <JobRowActions
                     jobId={job.id}
                     jobTitle={job.title}

@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ApplyButton } from "@/components/marketing/apply-button";
+import { ShareJobButton } from "@/components/marketing/share-job-button";
 
 /**
  * Shared between the public /jobs/[id] page (SEO, logged-out visitors) and
@@ -109,7 +110,7 @@ export function JobDetailContent({
         </Card>
       )}
 
-      <div className="mt-8">
+      <div className="mt-8 flex flex-wrap items-start gap-3">
         <ApplyButton
           jobId={job.id}
           isLoggedIn={Boolean(account)}
@@ -117,6 +118,7 @@ export function JobDetailContent({
           alreadyApplied={alreadyApplied}
           profileCompletion={profileCompletion}
         />
+        <ShareJobButton jobId={job.id} jobTitle={job.title} companyName={job.companies?.name ?? null} />
       </div>
 
       <div

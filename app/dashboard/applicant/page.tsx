@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PipelineStatusChart } from "@/components/applicant/pipeline-status-chart";
+import { ReferFriendsCard } from "@/components/applicant/refer-friends-card";
 import { formatDistanceToNow } from "date-fns";
 
 export default async function ApplicantDashboardPage() {
@@ -198,6 +199,8 @@ export default async function ApplicantDashboardPage() {
           ))}
         </CardContent>
       </Card>
+
+      <ReferFriendsCard applicantId={profile.id} />
     </div>
   );
 }

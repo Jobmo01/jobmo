@@ -218,6 +218,7 @@ export interface Company {
   video_url: string | null;
   verification_status: VerificationStatus;
   last_follow_up_email_at: string | null;
+  boost_credits: number;
   created_at: string;
   updated_at: string;
 }
@@ -249,6 +250,7 @@ export interface JobPosting {
   status: JobStatus;
   published_at: string | null;
   views_count: number;
+  is_boosted: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -456,6 +458,13 @@ export interface TalentPoolEntry {
   created_at: string;
 }
 
+export interface Referral {
+  id: string;
+  referrer_id: string;
+  referred_id: string;
+  created_at: string;
+}
+
 export interface SupportTicket {
   id: string;
   user_id: string | null;
@@ -498,6 +507,8 @@ export interface Database {
           role: UserRole;
           status: AccountStatus;
           permissions: Json;
+          referral_code: string | null;
+          pending_referral_code: string | null;
           deleted_at: string | null;
           created_at: string;
           updated_at: string;
@@ -510,12 +521,16 @@ export interface Database {
           role?: UserRole;
           status?: AccountStatus;
           permissions?: Json;
+          referral_code?: string | null;
+          pending_referral_code?: string | null;
           deleted_at?: string | null;
         };
         Update: {
           full_name?: string | null;
           avatar_url?: string | null;
           status?: AccountStatus;
+          referral_code?: string | null;
+          pending_referral_code?: string | null;
           deleted_at?: string | null;
         };
       };
@@ -622,13 +637,13 @@ export interface Database {
       };
       companies: {
         Row: Company;
-        Insert: Omit<Company, "id" | "created_at" | "updated_at" | "verification_status" | "last_follow_up_email_at"> & { verification_status?: VerificationStatus };
+        Insert: Omit<Company, "id" | "created_at" | "updated_at" | "verification_status" | "last_follow_up_email_at" | "boost_credits"> & { verification_status?: VerificationStatus };
         Update: Partial<Omit<Company, "id" | "owner_id" | "created_at" | "updated_at">>;
         Relationships: [];
       };
       job_postings: {
         Row: JobPosting;
-        Insert: Omit<JobPosting, "id" | "created_at" | "updated_at" | "views_count" | "published_at"> & { views_count?: number; published_at?: string | null };
+        Insert: Omit<JobPosting, "id" | "created_at" | "updated_at" | "views_count" | "published_at" | "is_boosted"> & { views_count?: number; published_at?: string | null };
         Update: Partial<Omit<JobPosting, "id" | "company_id" | "created_by" | "created_at" | "updated_at">>;
         Relationships: [];
       };
@@ -738,6 +753,12 @@ export interface Database {
         Row: TalentPoolEntry;
         Insert: Omit<TalentPoolEntry, "id" | "created_at">;
         Update: Partial<Pick<TalentPoolEntry, "note">>;
+        Relationships: [];
+      };
+      referrals: {
+        Row: Referral;
+        Insert: Omit<Referral, "id" | "created_at">;
+        Update: never;
         Relationships: [];
       };
     };
