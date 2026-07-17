@@ -1,13 +1,12 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateApplicantProfilePaths } from "@/lib/revalidate-profile";
 import { createClient } from "@/lib/supabase/server";
 import { profileRepository } from "@/lib/repositories/profile-repository";
 import { applicantProfileRepository } from "@/lib/repositories/applicant-profile-repository";
 import { personalDetailsSchema, preferencesSchema, dobChangeRequestSchema } from "@/lib/validations/applicant-profile";
 import { getErrorMessage } from "@/lib/utils";
 
-const PROFILE_PATH = "/dashboard/applicant/profile";
 
 export type ProfileActionResult = { error?: string; success?: true };
 
@@ -24,7 +23,7 @@ export async function updatePersonalDetailsAction(input: unknown): Promise<Profi
   try {
     const applicantId = await requireApplicantId();
     await applicantProfileRepository.updatePersonalDetails(applicantId, parsed.data);
-    revalidatePath(PROFILE_PATH);
+    revalidateApplicantProfilePaths();
     return { success: true };
   } catch (e) {
     return { error: getErrorMessage(e, "Failed to save personal details") };
@@ -54,7 +53,7 @@ export async function setInitialDobAction(dob: string): Promise<ProfileActionRes
       .eq("id", applicantId);
     if (error) throw error;
 
-    revalidatePath(PROFILE_PATH);
+    revalidateApplicantProfilePaths();
     return { success: true };
   } catch (e) {
     return { error: getErrorMessage(e, "Failed to save date of birth") };
@@ -68,7 +67,7 @@ export async function updatePreferencesAction(input: unknown): Promise<ProfileAc
   try {
     const applicantId = await requireApplicantId();
     await applicantProfileRepository.updatePersonalDetails(applicantId, parsed.data);
-    revalidatePath(PROFILE_PATH);
+    revalidateApplicantProfilePaths();
     return { success: true };
   } catch (e) {
     return { error: getErrorMessage(e, "Failed to save preferences") };
@@ -126,7 +125,7 @@ export async function requestDobChangeAction(
       drivingLicenseDocumentUrl: licensePath,
     });
 
-    revalidatePath(PROFILE_PATH);
+    revalidateApplicantProfilePaths();
     return { success: true };
   } catch (e) {
     return { error: getErrorMessage(e, "Failed to submit request") };
@@ -165,7 +164,7 @@ export async function updateSectionNotApplicableAction(field: NaField, value: bo
       .update({ [field]: value })
       .eq("id", applicantId);
     if (error) throw error;
-    revalidatePath(PROFILE_PATH);
+    revalidateApplicantProfilePaths();
     return { success: true };
   } catch (e) {
     return { error: getErrorMessage(e, "Failed to update") };

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateApplicantProfilePaths } from "@/lib/revalidate-profile";
 import type { z } from "zod";
 import { getErrorMessage } from "@/lib/utils";
 import { profileRepository } from "@/lib/repositories/profile-repository";
@@ -29,7 +29,6 @@ import {
   referenceSchema,
 } from "@/lib/validations/applicant-profile";
 
-const PROFILE_PATH = "/dashboard/applicant/profile";
 
 export type SectionActionResult<T = unknown> = { data?: T; error?: string; success?: true };
 
@@ -53,7 +52,7 @@ function makeSectionActions<Schema extends z.ZodObject<z.ZodRawShape>>(repo: any
       try {
         const applicantId = await requireApplicantId();
         const data = await repo.create({ ...parsed.data, applicant_id: applicantId });
-        revalidatePath(PROFILE_PATH);
+        revalidateApplicantProfilePaths();
         return { data };
       } catch (e) {
         return { error: getErrorMessage(e, "Failed to save") };
@@ -64,7 +63,7 @@ function makeSectionActions<Schema extends z.ZodObject<z.ZodRawShape>>(repo: any
       if (!parsed.success) return { error: parsed.error.errors[0]?.message ?? "Invalid input" };
       try {
         const data = await repo.update(id, parsed.data);
-        revalidatePath(PROFILE_PATH);
+        revalidateApplicantProfilePaths();
         return { data };
       } catch (e) {
         return { error: getErrorMessage(e, "Failed to save") };
@@ -73,7 +72,7 @@ function makeSectionActions<Schema extends z.ZodObject<z.ZodRawShape>>(repo: any
     async remove(id: string): Promise<SectionActionResult> {
       try {
         await repo.remove(id);
-        revalidatePath(PROFILE_PATH);
+        revalidateApplicantProfilePaths();
         return { success: true };
       } catch (e) {
         return { error: getErrorMessage(e, "Failed to delete") };

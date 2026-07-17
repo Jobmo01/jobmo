@@ -3,6 +3,20 @@
 Work through this after following the setup steps in `README.md`. Check off
 each item; anything that fails, note the exact steps to reproduce.
 
+## Page-wide horizontal scroll and stale profile-completion banner
+
+- [ ] In your profile's Experience tab, add an entry with a long,
+      multi-sentence description (like the real bulleted descriptions
+      from a CV) — confirm the whole page no longer scrolls sideways,
+      and the entry shows as a single truncated line in the list
+- [ ] Check a few other dashboard pages with potentially long content
+      (job descriptions, company descriptions) to confirm none of them
+      cause page-wide horizontal scroll either
+- [ ] With an incomplete profile, complete the last remaining item
+      (e.g. check the final N/A box or add the last required entry) —
+      immediately go to the dashboard Overview page and confirm the
+      "complete your profile" banner is gone, not still showing stale
+
 ## Job location, apply-form layout, text overflow, referral bug, auto CV summary
 
 - [ ] Run migrations `0026_fix_job_postings_created_by_constraint.sql`

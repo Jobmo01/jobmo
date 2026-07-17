@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateApplicantProfilePaths } from "@/lib/revalidate-profile";
 import { profileRepository } from "@/lib/repositories/profile-repository";
 import { educationRepository, experienceRepository, skillsRepository } from "@/lib/repositories/applicant-profile-repository";
 import { extractSkillsFromProfile } from "@/lib/ai/skill-extraction";
@@ -38,7 +38,7 @@ export async function addSuggestedSkillAction(name: string): Promise<{ error?: s
     const account = await profileRepository.getCurrent();
     if (!account) throw new Error("Not authenticated");
     await skillsRepository.create({ applicant_id: account.id, name, proficiency: "intermediate", is_ai_suggested: true });
-    revalidatePath("/dashboard/applicant/profile");
+    revalidateApplicantProfilePaths();
     return { success: true };
   } catch (e) {
     return { error: getErrorMessage(e, "Failed to add skill") };

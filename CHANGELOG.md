@@ -128,6 +128,36 @@ of likely impact:
   anything), and real job search now lives inside the applicant dashboard
   per the earlier "simplify the marketing site" direction.
 
+## Fix — page-wide horizontal scroll and stale profile-completion banner — 2026-07-17
+
+### Fixed
+- **The Experience section (and potentially anything else with long
+  content) could force the entire page to scroll sideways, not just the
+  text itself.** Root cause, found by tracing the actual DOM structure
+  rather than re-patching the same symptom again: the dashboard shell's
+  main content area (`<main className="flex-1 p-6">`) was a flex child
+  with no `min-w-0`. Without that, a flex item defaults to never
+  shrinking below its content's natural width — so *any* long unbroken
+  line of text anywhere inside it (not just Experience) could force the
+  entire page wider, regardless of `truncate`/`min-w-0` already being
+  correctly set on the inner components themselves. Those inner fixes
+  were real and necessary, but couldn't do anything as long as the
+  outermost boundary refused to constrain in the first place. One
+  targeted class added to the shell fixes this for the whole dashboard,
+  not just this one page.
+- **The "complete your profile" banner could keep showing after the
+  profile actually reached 100%.** Not a logic bug — every action that
+  changes profile completion (adding an experience entry, checking an
+  N/A box, updating personal details, adding an AI-suggested skill, and
+  6 others) only ever refreshed the Profile page's own cache, never the
+  Overview page, which shows the same banner based on the same
+  completion percentage. So the Overview page could keep serving a
+  stale "incomplete" render for a while after the real data changed.
+  Consolidated all 9 call sites (across 3 files) onto one shared
+  `revalidateApplicantProfilePaths()` helper that refreshes both pages
+  together, rather than trying to remember to add a second
+  `revalidatePath()` call in 9 separate places by hand.
+
 ## Job location, apply-form layout, text overflow, referral bug, auto CV summary — 2026-07-17
 
 ### Fixed
