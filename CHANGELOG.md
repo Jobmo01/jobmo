@@ -128,6 +128,36 @@ of likely impact:
   anything), and real job search now lives inside the applicant dashboard
   per the earlier "simplify the marketing site" direction.
 
+## Added — Google Analytics — 2026-07-15
+
+### Added
+- **Google Analytics (GA4)**, wired up via `next/script` using Next.js's
+  official pattern, entirely optional based on
+  `NEXT_PUBLIC_GA_MEASUREMENT_ID` — the site works completely normally
+  without it configured, GA simply doesn't load. IP anonymization is
+  turned on by default (Google Analytics never stores a full IP, only
+  enough to estimate general location), and no advertising features
+  (Google Signals / Ads linking) are enabled — this stays a usage-stats
+  tool, not an ad-tracking one.
+- Updated the **Privacy Policy** and **Cookie Policy** to accurately
+  reflect this — they previously stated explicitly that no analytics
+  platform was in use, which was true when written but would have become
+  misleading the moment this shipped without also updating them. Also
+  fixed a real, unrelated staleness issue found while in there: the
+  Privacy Policy's service-providers list still said "Netlify" (the
+  originally-planned host) instead of Vercel (the actual one) — and
+  added Brevo to that list too, since it wasn't mentioned at all despite
+  already handling account-related email.
+- **Note for finding "logins" in GA4**: Google Analytics doesn't track
+  logins as a concept out of the box — no code changes were made to add
+  a custom login event for this pass, since simply looking at pageviews
+  to `/dashboard/applicant`, `/dashboard/employer`, etc. in GA4's
+  standard reports already gives an accurate, automatic proxy (only a
+  successful login can reach those pages), broken down by role for
+  free. A dedicated `login` event (split by email vs. Google) is a
+  reasonable future enhancement if more precision is ever needed, but
+  wasn't necessary to satisfy what was actually asked for here.
+
 ## Added — automatic Brevo contact sync — 2026-07-15
 
 ### Added

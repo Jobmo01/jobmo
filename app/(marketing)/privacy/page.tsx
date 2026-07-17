@@ -11,7 +11,7 @@ export default function PrivacyPage() {
     <LegalPageLayout
       title="Privacy Policy"
       description="How JobMo collects, uses, and protects your data."
-      lastUpdated="14 July 2026"
+      lastUpdated="15 July 2026"
     >
       <div className="rounded-lg border border-accent/30 bg-accent/5 p-4 text-sm text-muted-foreground">
         <strong className="text-foreground">A note before you rely on this:</strong> this policy describes,
@@ -90,7 +90,7 @@ export default function PrivacyPage() {
         <ul>
           <li><strong>With employers</strong>, when you apply to their job posting — they see your profile and application details for that role</li>
           <li><strong>With applicants</strong>, when an employer schedules an interview, sends an offer, or updates an application — the applicant sees the relevant details</li>
-          <li><strong>With service providers</strong> who help us run JobMo: Supabase (database and file storage), Netlify (hosting), and OpenAI (for the AI features described above)</li>
+          <li><strong>With service providers</strong> who help us run JobMo: Supabase (database and file storage), Vercel (hosting), OpenAI (for the AI features described above), Google Analytics (site usage statistics — see our <a href="/cookies">Cookie Policy</a> for details), and Brevo (sending account-related emails and, if you opt in, our newsletter)</li>
           <li><strong>When required by law</strong>, or to protect the rights, safety, or property of JobMo, our users, or the public</li>
         </ul>
         <p>We do not sell your personal information, and we do not use advertising trackers.</p>
