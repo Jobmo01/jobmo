@@ -65,8 +65,12 @@ export function JobDetailContent({
       </div>
 
       <div className="mt-4 flex flex-wrap gap-3 text-sm text-muted-foreground">
-        {job.work_type && (
-          <span className="inline-flex items-center gap-1"><MapPin className="h-4 w-4" /> {job.work_type.replace("_", " ")}</span>
+        {(job.location || job.work_type) && (
+          <span className="inline-flex items-center gap-1">
+            <MapPin className="h-4 w-4" />
+            {job.location ?? job.work_type?.replace("_", " ")}
+            {job.location && job.work_type && ` (${job.work_type.replace("_", " ")})`}
+          </span>
         )}
         {job.employment_type && (
           <span className="inline-flex items-center gap-1"><Briefcase className="h-4 w-4" /> {job.employment_type.replace("_", " ")}</span>

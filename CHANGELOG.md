@@ -128,6 +128,76 @@ of likely impact:
   anything), and real job search now lives inside the applicant dashboard
   per the earlier "simplify the marketing site" direction.
 
+## Job location, apply-form layout, text overflow, referral bug, auto CV summary — 2026-07-17
+
+### Fixed
+- **Referral links weren't crediting the referrer — root cause found and
+  fixed.** `recordReferral()` and `findReferrerIdByCode()` used the
+  normal cookie-bound Supabase client, but both are called in the very
+  same request as `signUp()` / `signInWithPassword()` /
+  `exchangeCodeForSession()` — right after a brand-new session is
+  established. A freshly-created client's read of that just-written
+  session isn't reliably visible within that same request/response
+  cycle, so the RLS check on the `referrals` table (`referred_id =
+  auth.uid()`) was very likely evaluating against no session at all,
+  failing silently every time — the error was caught and logged, never
+  surfaced, so registration itself looked completely fine while the
+  referral simply never got recorded. Fixed by using the service-role
+  client for both functions instead, which sidesteps the whole timing
+  question since it doesn't depend on session/RLS for what is,
+  semantically, a system operation (crediting an event), not a
+  user-scoped one.
+- **Long, unbroken text (e.g. a URL with no spaces) in the Experience
+  description caused the whole page to scroll sideways**, not just the
+  text box. Root cause: the base `Textarea` component had no
+  `overflow-wrap` handling, so a single word with no natural break point
+  could force the textarea (and its containing dialog) wider than
+  intended. Fixed at the source (`break-words` added to the shared
+  `Textarea` component, fixing this everywhere it's used, not just
+  Experience) plus a defensive `overflow-x-hidden` added to `DialogContent`
+  itself, so no future case of this same category of bug can ever bubble
+  up to page-level scroll again, regardless of what causes it. Also
+  added the same `break-words` protection to the two places that display
+  an already-saved description as read-only text, in case anything was
+  saved with this problem before the fix.
+- **The optional application note got visually compressed** once the
+  Share button was added next to Apply — both were flex siblings with no
+  explicit width, so the note's textarea just shrank to fit alongside
+  Share rather than taking the full row. Fixed by giving the expanded
+  form (and the "complete your profile" prompt state) explicit full
+  width, which pushes Share onto its own line instead of squeezing
+  against it.
+
+### Added
+- **Job postings now have their own location field** — previously only
+  inferred from the employer's general company locations list, meaning
+  two jobs at the same company in different cities had no way to show
+  that. Shown on Browse Jobs, the job detail page, and used directly in
+  the JobPosting structured-data schema (falling back to the company's
+  general location only for older jobs that predate this field).
+- **CV downloads now auto-generate the AI professional summary** if one
+  doesn't exist yet, using the applicant's actual skills, experience, and
+  education — previously this required a separate, easy-to-miss manual
+  "Generate insights" click on the Resume Builder page before ever
+  downloading. Persisted to the profile the same way the manual button
+  already does (so the Resume Builder's own Insights panel stays in
+  sync), and gracefully skipped — not a failed download — if AI isn't
+  configured on this deployment.
+
+## Bug fix — job_postings.created_by foreign key constraint — 2026-07-17
+
+### Fixed
+- `job_postings.created_by` has always been `NOT NULL`, but its foreign
+  key was defined as `ON DELETE SET NULL` — a genuine, self-contradictory
+  bug from when the table was first created: if the referenced profile
+  is deleted, Postgres tries to null this column out to satisfy the FK
+  action, and the `NOT NULL` constraint rejects that, blocking the
+  delete entirely. Sat unnoticed until the first time a profile owning a
+  job posting was actually deleted. Fixed by cascading the delete
+  instead — a job posting genuinely can't exist without its creator, so
+  removing it along with the deleted account is the correct, consistent
+  behavior.
+
 ## Added — referral program (Talent Scout badge) and employer job-boost credits — 2026-07-17
 
 ### Added

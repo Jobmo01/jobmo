@@ -55,6 +55,7 @@ export function JobPostingForm({ job }: { job?: JobPosting }) {
   const [showSalary, setShowSalary] = React.useState(job?.show_salary ?? true);
   const [benefits, setBenefits] = React.useState<string[]>(job?.benefits ?? []);
   const [workType, setWorkType] = React.useState(job?.work_type ?? "");
+  const [location, setLocation] = React.useState(job?.location ?? "");
   const [employmentType, setEmploymentType] = React.useState(job?.employment_type ?? "");
   const [deadline, setDeadline] = React.useState(job?.application_deadline ?? "");
   const [questions, setQuestions] = React.useState<ScreeningQuestion[]>(job?.screening_questions ?? []);
@@ -123,6 +124,7 @@ export function JobPostingForm({ job }: { job?: JobPosting }) {
       salary_currency: "LKR", show_salary: showSalary,
       benefits,
       work_type: workType || undefined,
+      location: location || undefined,
       employment_type: employmentType || undefined,
       application_deadline: deadline || undefined,
       screening_questions: questions,
@@ -197,6 +199,15 @@ export function JobPostingForm({ job }: { job?: JobPosting }) {
                   {WORK_TYPES.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="location">Location</Label>
+              <Input
+                id="location"
+                placeholder={workType === "remote" ? "e.g. Remote (Sri Lanka)" : "e.g. Colombo"}
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Employment type</Label>

@@ -244,6 +244,7 @@ export interface JobPosting {
   show_salary: boolean;
   benefits: string[];
   work_type: WorkType | null;
+  location: string | null;
   employment_type: EmploymentType | null;
   application_deadline: string | null;
   screening_questions: ScreeningQuestion[];

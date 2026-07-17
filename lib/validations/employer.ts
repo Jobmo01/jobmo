@@ -45,6 +45,7 @@ export const jobPostingSchema = z.object({
   show_salary: z.boolean().default(true),
   benefits: z.array(z.string()).default([]),
   work_type: z.enum(["on_site", "remote", "hybrid"]).optional(),
+  location: optionalString,
   employment_type: z.enum(["full_time", "part_time", "contract", "internship", "freelance"]).optional(),
   application_deadline: optionalString,
   screening_questions: z.array(screeningQuestionSchema).default([]),

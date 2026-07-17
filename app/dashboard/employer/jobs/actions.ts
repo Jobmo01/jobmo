@@ -68,6 +68,7 @@ export async function createJobAction(input: unknown): Promise<JobActionResult> 
     const job = await jobRepository.create({
       ...parsed.data,
       work_type: parsed.data.work_type ?? null,
+      location: parsed.data.location ?? null,
       employment_type: parsed.data.employment_type ?? null,
       experience_level: parsed.data.experience_level ?? null,
       education_requirement: parsed.data.education_requirement ?? null,

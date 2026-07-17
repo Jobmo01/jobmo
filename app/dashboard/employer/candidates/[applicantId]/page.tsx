@@ -94,7 +94,7 @@ export default async function CandidateProfilePage({ params }: { params: Promise
                 <p className="text-xs text-muted-foreground">
                   {e.start_date ? format(new Date(e.start_date), "MMM yyyy") : "—"} – {e.end_date ? format(new Date(e.end_date), "MMM yyyy") : "Present"}
                 </p>
-                {e.description && <p className="mt-1 text-sm text-muted-foreground">{e.description}</p>}
+                {e.description && <p className="mt-1 break-words text-sm text-muted-foreground">{e.description}</p>}
               </div>
             ))}
           </CardContent>
@@ -139,7 +139,7 @@ export default async function CandidateProfilePage({ params }: { params: Promise
             {projects.map((p: any) => (
               <div key={p.id}>
                 <p className="font-medium">{p.title}</p>
-                {p.description && <p className="text-sm text-muted-foreground">{p.description}</p>}
+                {p.description && <p className="break-words text-sm text-muted-foreground">{p.description}</p>}
                 {p.project_url && (
                   <a href={p.project_url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
                     View project →

@@ -46,7 +46,7 @@ export function ApplyButton({
 
   if (profileCompletion && profileCompletion.percentage < 100) {
     return (
-      <div className="rounded-lg border border-accent/40 bg-accent/5 p-4">
+      <div className="w-full rounded-lg border border-accent/40 bg-accent/5 p-4">
         <p className="inline-flex items-center gap-1.5 font-medium">
           <AlertCircle className="h-4 w-4 text-accent" /> Complete your profile to apply
         </p>
@@ -85,7 +85,7 @@ export function ApplyButton({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="w-full space-y-3">
       <Textarea
         value={coverLetter}
         onChange={(e) => setCoverLetter(e.target.value)}

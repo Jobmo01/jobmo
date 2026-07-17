@@ -3,6 +3,27 @@
 Work through this after following the setup steps in `README.md`. Check off
 each item; anything that fails, note the exact steps to reproduce.
 
+## Job location, apply-form layout, text overflow, referral bug, auto CV summary
+
+- [ ] Run migrations `0026_fix_job_postings_created_by_constraint.sql`
+      and `0027_job_postings_location.sql`, in that order
+- [ ] Post a new job, fill in a Location (e.g. "Colombo"), publish it —
+      confirm the location shows on Browse Jobs and the job detail page
+- [ ] On that job's detail page, click Apply — confirm the optional note
+      textarea now takes full width, not squeezed next to the Share button
+- [ ] In your profile's Experience tab, add an entry with a very long,
+      space-less string in the description (e.g. paste a long URL with
+      no spaces) — confirm the page no longer scrolls sideways
+- [ ] Copy your own referral link, register a brand-new account through
+      it (try both email/password and Google), then check the referring
+      account's dashboard — the "Refer friends" progress should now
+      correctly show the new count (this was silently failing before)
+- [ ] As an applicant with a 100%-complete profile who has **never**
+      clicked "Generate insights" before, go straight to Resume Builder
+      and download a CV — confirm it includes an AI-written professional
+      summary automatically, without needing that separate manual step
+      first
+
 ## Referral program and job-boost credits
 
 - [ ] Run migration `0025_referrals_and_job_boosts.sql`

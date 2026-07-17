@@ -26,6 +26,7 @@ interface JobRow {
   id: string;
   title: string;
   work_type: string | null;
+  location: string | null;
   employment_type: string | null;
   matchScore: number | null;
   companies: { name: string } | null;
@@ -41,7 +42,7 @@ export function BrowseJobsList({ jobs, appliedJobIds }: { jobs: JobRow[]; applie
     if (workType !== "all" && job.work_type !== workType) return false;
     if (employmentType !== "all" && job.employment_type !== employmentType) return false;
     if (search) {
-      const haystack = `${job.title} ${job.companies?.name ?? ""}`.toLowerCase();
+      const haystack = `${job.title} ${job.companies?.name ?? ""} ${job.location ?? ""}`.toLowerCase();
       if (!haystack.includes(search.toLowerCase())) return false;
     }
     return true;
@@ -103,9 +104,11 @@ export function BrowseJobsList({ jobs, appliedJobIds }: { jobs: JobRow[]; applie
                     <h2 className="font-display font-semibold">{job.title}</h2>
                     <p className="text-sm text-muted-foreground">{job.companies?.name}</p>
                     <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
-                      {job.work_type && (
+                      {(job.location || job.work_type) && (
                         <span className="inline-flex items-center gap-1">
-                          <MapPin className="h-3.5 w-3.5" /> {job.work_type.replace("_", " ")}
+                          <MapPin className="h-3.5 w-3.5" />
+                          {job.location ?? job.work_type?.replace("_", " ")}
+                          {job.location && job.work_type && ` (${job.work_type.replace("_", " ")})`}
                         </span>
                       )}
                       {job.employment_type && (

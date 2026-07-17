@@ -59,7 +59,7 @@ export function buildJobPostingSchema(job: JobPosting, company: JobPostingCompan
     schema.jobLocationType = "TELECOMMUTE";
     schema.applicantLocationRequirements = { "@type": "Country", name: "Sri Lanka" };
   } else {
-    const locality = company?.locations?.[0] ?? "Sri Lanka";
+    const locality = job.location || company?.locations?.[0] || "Sri Lanka";
     schema.jobLocation = {
       "@type": "Place",
       address: {

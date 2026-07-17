@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/server";
 
 // Excludes visually-ambiguous characters (0/O, 1/I/L) so a code read aloud
 // or half-remembered doesn't get mistyped.
@@ -37,8 +38,23 @@ export const referralRepository = {
     throw new Error("Failed to generate a unique referral code after 5 attempts");
   },
 
+  /**
+   * Uses the service-role client, not the normal cookie-bound one. This
+   * is called from the same request as signUp() / signInWithPassword() /
+   * exchangeCodeForSession() — right after establishing a brand-new
+   * session. A freshly-created cookie-bound client's read of that
+   * just-written session isn't reliably visible within that same
+   * request/response cycle (cookies() reads the incoming request, not
+   * writes made during the same execution), so the RLS check on
+   * referrals (referred_id = auth.uid()) was very likely evaluating
+   * against no session at all — failing silently every time, since the
+   * caller's try/catch swallowed the error without surfacing it. The
+   * service-role client sidesteps this whole timing question by not
+   * depending on session/RLS at all for what is, semantically, a system
+   * operation (crediting an event), not a user-scoped one.
+   */
   async findReferrerIdByCode(code: string): Promise<string | null> {
-    const supabase = await createClient();
+    const supabase = createServiceRoleClient();
     const { data } = await (supabase.from("profiles") as any)
       .select("id")
       .eq("referral_code", code)
@@ -47,7 +63,8 @@ export const referralRepository = {
   },
 
   /**
-   * Records a successful referral. Safe to call even if it somehow fires
+   * Records a successful referral. Same service-role reasoning as
+   * findReferrerIdByCode() above. Safe to call even if it somehow fires
    * twice for the same person (referred_id is unique in the database) —
    * the second call just fails quietly rather than double-crediting
    * someone or throwing an error that could disrupt registration.
@@ -55,7 +72,7 @@ export const referralRepository = {
   async recordReferral(referrerId: string, referredId: string): Promise<void> {
     if (referrerId === referredId) return; // can't refer yourself
     try {
-      const supabase = await createClient();
+      const supabase = createServiceRoleClient();
       await (supabase.from("referrals") as any).insert({ referrer_id: referrerId, referred_id: referredId });
     } catch (e) {
       console.error("Failed to record referral (non-fatal):", e);
