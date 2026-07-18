@@ -28,16 +28,17 @@ const nextConfig = {
           // Disable browser features this app never uses.
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
           // Content-Security-Policy: allows what the app actually needs (Supabase, Google
-          // Fonts, YouTube/Vimeo embeds for Learning Center videos) and nothing else.
+          // Fonts, YouTube/Vimeo embeds for Learning Center videos, Google Analytics,
+          // Meta Pixel) and nothing else.
           {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // 'unsafe-eval'/'unsafe-inline' needed by Next.js dev/hydration — tighten further with nonces in a later hardening pass
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://connect.facebook.net", // 'unsafe-eval'/'unsafe-inline' needed by Next.js dev/hydration — tighten further with nonces in a later hardening pass
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https://*.supabase.co",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.openai.com",
+              "img-src 'self' data: blob: https://*.supabase.co https://www.facebook.com",
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.openai.com https://www.google-analytics.com https://*.google-analytics.com https://www.facebook.com",
               "frame-src 'self' https://www.youtube.com https://player.vimeo.com",
               "frame-ancestors 'none'",
             ].join("; "),

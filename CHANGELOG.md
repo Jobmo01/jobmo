@@ -128,6 +128,35 @@ of likely impact:
   anything), and real job search now lives inside the applicant dashboard
   per the earlier "simplify the marketing site" direction.
 
+## Fix — Content-Security-Policy was silently blocking Google Analytics and Meta Pixel — 2026-07-18
+
+### Fixed
+- **Both Google Analytics and the Meta Pixel were being silently blocked
+  by the site's own security headers since the moment each was added** —
+  worth stating plainly since this should have been caught when GA4 was
+  first built, not several sessions later. JobMo has a
+  Content-Security-Policy header restricting which external scripts and
+  network requests the browser is allowed to run, and neither
+  `googletagmanager.com` nor `connect.facebook.net` (for loading the
+  scripts) nor `google-analytics.com` / `facebook.com` (for the actual
+  data-sending requests those scripts make) were ever added to that
+  allow-list. The browser was rejecting them with no visible error
+  message anywhere a normal user would see — CSP violations only show up
+  in a browser's developer console, which is why every external check
+  ("is the code on the page," "is the env var set," "try from a
+  different device") kept coming back clean while GA4 still showed no
+  data. A production build succeeding was never going to catch this,
+  since CSP enforcement only happens in a real browser at runtime, not
+  during the build itself. Fixed by explicitly allowing exactly what
+  each of these two tools needs (script loading + data beacon
+  endpoints), nothing broader.
+- **How to catch this class of bug directly, going forward** (worth
+  knowing since it's the fast, correct diagnostic — much faster than
+  external checks): open the site, press F12 (or right-click → Inspect),
+  go to the **Console** tab, and reload the page. A CSP violation shows
+  up immediately as a red error mentioning "Content Security Policy" and
+  naming the exact blocked URL.
+
 ## Added — Meta Pixel — 2026-07-18
 
 ### Added
