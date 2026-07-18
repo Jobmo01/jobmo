@@ -128,6 +128,19 @@ of likely impact:
   anything), and real job search now lives inside the applicant dashboard
   per the earlier "simplify the marketing site" direction.
 
+## Added — Meta Pixel — 2026-07-18
+
+### Added
+- **Meta Pixel base tracking** (PageView), wired up the same way as
+  Google Analytics — entirely optional based on
+  `NEXT_PUBLIC_META_PIXEL_ID`, the site works completely normally
+  without it configured. This is what lets Meta Ads Manager see whether
+  people who click an ad actually land on JobMo, which is required for
+  running Facebook/Instagram ad campaigns with any real feedback loop.
+  Deeper conversion tracking (a `CompleteRegistration` event firing on
+  actual signup, split by applicant vs. employer) is a reasonable next
+  step once ad campaigns are live, not built in this pass.
+
 ## Fix — corrected the horizontal-scroll fix, and hid the profile-completion banner at 100% — 2026-07-18
 
 ### Fixed
