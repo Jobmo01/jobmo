@@ -128,6 +128,32 @@ of likely impact:
   anything), and real job search now lives inside the applicant dashboard
   per the earlier "simplify the marketing site" direction.
 
+## Fix — corrected the horizontal-scroll fix, and hid the profile-completion banner at 100% — 2026-07-18
+
+### Fixed
+- **The previous horizontal-scroll fix targeted the wrong element and
+  had no real effect** — worth being direct about, since it looked like
+  a fix but wasn't one. The dashboard's actual page layout is a CSS grid
+  (`grid-cols-[240px_1fr]`, sidebar + content), not the flex row I'd
+  assumed. I'd added `min-w-0` to `<main>`, but `<main>`'s own `flex-1`
+  there governs *vertical* stacking within its own column (header above
+  banner above main), which has nothing to do with the grid column that
+  actually determines the page's overall width. The real fix belongs on
+  the grid item itself — the wrapping `<div className="flex flex-col">`
+  that occupies the flexible `1fr` column — which had the exact same
+  missing constraint. Grid items default to never shrinking below their
+  content's width, same as flex items, for the same underlying reason;
+  I'd fixed the wrong layer of the same category of bug. This is now on
+  the actual grid item, which is the layer that genuinely controls page
+  width.
+- **The profile-completion banner had no logic to hide at 100% at
+  all** — this wasn't a caching gap like the Overview page's version;
+  this banner (on the Profile page itself) was always rendered
+  unconditionally, checkmarks and all, regardless of completion. Now
+  replaced with a brief "profile complete" confirmation once the
+  percentage reaches 100%, instead of an endless progress bar stuck at
+  full with a wall of checkmarks underneath it.
+
 ## Fix — page-wide horizontal scroll and stale profile-completion banner — 2026-07-17
 
 ### Fixed

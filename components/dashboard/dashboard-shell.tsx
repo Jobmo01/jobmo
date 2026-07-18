@@ -132,7 +132,7 @@ export function DashboardShell({
         </div>
       </aside>
 
-      <div className="flex flex-col">
+      <div className="min-w-0 flex flex-col">
         <header className="flex h-16 items-center justify-between border-b border-border px-5">
           <div>
             <p className="text-sm font-medium">{fullName ?? email}</p>

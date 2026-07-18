@@ -1,3 +1,4 @@
+import { CheckCircle2 } from "lucide-react";
 import { profileRepository } from "@/lib/repositories/profile-repository";
 import {
   applicantProfileRepository,
@@ -84,22 +85,31 @@ export default async function ProfilePage() {
         </p>
       </div>
 
-      <Card>
-        <CardContent className="p-5">
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-medium">Profile completion</span>
-            <span className="text-muted-foreground">{completion.percentage}%</span>
-          </div>
-          <Progress value={completion.percentage} className="mt-2" />
-          <ul className="mt-4 grid gap-1.5 sm:grid-cols-2">
-            {completion.sections.map((s) => (
-              <li key={s.key} className={`text-xs ${s.done ? "text-success" : "text-muted-foreground"}`}>
-                {s.done ? "✓" : "○"} {s.label}
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
+      {completion.percentage >= 100 ? (
+        <Card className="border-success/40 bg-success/5">
+          <CardContent className="flex items-center gap-2 p-4 text-sm">
+            <CheckCircle2 className="h-4 w-4 text-success" />
+            <span className="font-medium">Your profile is complete — the AI Resume Builder is unlocked.</span>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-medium">Profile completion</span>
+              <span className="text-muted-foreground">{completion.percentage}%</span>
+            </div>
+            <Progress value={completion.percentage} className="mt-2" />
+            <ul className="mt-4 grid gap-1.5 sm:grid-cols-2">
+              {completion.sections.map((s) => (
+                <li key={s.key} className={`text-xs ${s.done ? "text-success" : "text-muted-foreground"}`}>
+                  {s.done ? "✓" : "○"} {s.label}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="personal">
         <TabsList>
