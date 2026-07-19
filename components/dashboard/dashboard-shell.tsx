@@ -61,6 +61,7 @@ const NAV_BY_ROLE: Record<UserRole, { href: string; label: string; icon: React.E
     { href: "/dashboard/admin/companies", label: "Companies", icon: Building2 },
     { href: "/dashboard/admin/jobs", label: "Jobs", icon: Briefcase },
     { href: "/dashboard/admin/approvals", label: "Approvals", icon: FileCheck2 },
+    { href: "/dashboard/admin/learning-center", label: "Learning Center", icon: GraduationCap },
     { href: "/dashboard/admin/support", label: "Support Tickets", icon: LifeBuoy },
     { href: "/dashboard/admin/audit-logs", label: "Audit Logs", icon: ScrollText },
     { href: "/dashboard/admin/reports", label: "Reports", icon: FileDown },

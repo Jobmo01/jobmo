@@ -128,6 +128,19 @@ of likely impact:
   anything), and real job search now lives inside the applicant dashboard
   per the earlier "simplify the marketing site" direction.
 
+## Fix — Learning Center missing from super_admin navigation — 2026-07-18
+
+### Fixed
+- **The Learning Center admin page (manage quizzes/articles) was never
+  added to the super_admin navigation array**, even though it's been in
+  the regular admin's nav the whole time and the page itself has no
+  role restriction blocking super_admin — same category of bug as the
+  earlier missing "Reports" link, just a different item slipping
+  through the same gap. Added it to `super_admin`'s array in the same
+  position it holds in `admin`'s. Swept the rest of both arrays side by
+  side afterward and found no further gaps — every other item lines up
+  correctly.
+
 ## Fix — Content-Security-Policy was silently blocking Google Analytics and Meta Pixel — 2026-07-18
 
 ### Fixed
