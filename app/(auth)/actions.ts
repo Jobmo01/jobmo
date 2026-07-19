@@ -62,72 +62,97 @@ export async function loginAction(_prev: ActionState, formData: FormData): Promi
 }
 
 export async function registerAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const parsed = registerSchema.safeParse({
-    fullName: formData.get("fullName"),
-    email: formData.get("email"),
-    password: formData.get("password"),
-    confirmPassword: formData.get("confirmPassword"),
-    accountType: formData.get("accountType"),
-    agreeToTerms: formData.get("agreeToTerms") === "on",
-  });
-  const referralCode = (formData.get("referralCode") as string | null)?.trim() || undefined;
+  let redirectTarget: string | null = null;
 
-  if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Invalid input" };
-  }
+  try {
+    const parsed = registerSchema.safeParse({
+      fullName: formData.get("fullName"),
+      email: formData.get("email"),
+      password: formData.get("password"),
+      confirmPassword: formData.get("confirmPassword"),
+      accountType: formData.get("accountType"),
+      agreeToTerms: formData.get("agreeToTerms") === "on",
+    });
+    const referralCode = (formData.get("referralCode") as string | null)?.trim() || undefined;
 
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp({
-    email: parsed.data.email,
-    password: parsed.data.password,
-    options: {
-      data: {
-        full_name: parsed.data.fullName,
-        // The handle_new_user() trigger (Phase 3) assigns role='employer'
-        // directly when this is 'employer' — verification (companies.
-        // verification_status) is the trust gate, not the role itself.
-        requested_account_type: parsed.data.accountType,
-        // Captured into profiles.pending_referral_code by the same
-        // trigger — credited below immediately if a session already
-        // exists, otherwise at first login (see loginAction).
-        referred_by_code: referralCode,
-      },
-    },
-  });
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  // Awaited deliberately, even though it never throws — on Vercel's
-  // serverless platform, a fire-and-forget network call can be killed
-  // mid-flight the moment this function returns, before it actually
-  // reaches Brevo. Awaiting it (its own internal try/catch already
-  // guarantees this never fails the registration itself) makes sure the
-  // sync genuinely completes rather than racing the response.
-  await addContactToBrevo({
-    email: parsed.data.email,
-    fullName: parsed.data.fullName,
-    role: parsed.data.accountType,
-  });
-
-  // If email confirmation isn't required, a real session exists right
-  // now — credit the referral immediately rather than waiting for a
-  // first login that (in this configuration) will never meaningfully
-  // differ from this moment.
-  if (data.session && data.user && referralCode) {
-    const referrerId = await referralRepository.findReferrerIdByCode(referralCode);
-    if (referrerId) {
-      await referralRepository.recordReferral(referrerId, data.user.id);
-      await (supabase.from("profiles") as any).update({ pending_referral_code: null }).eq("id", data.user.id);
+    if (!parsed.success) {
+      return { error: parsed.error.errors[0]?.message ?? "Invalid input" };
     }
+
+    const supabase = await createClient();
+    const { data, error } = await supabase.auth.signUp({
+      email: parsed.data.email,
+      password: parsed.data.password,
+      options: {
+        data: {
+          full_name: parsed.data.fullName,
+          // The handle_new_user() trigger (Phase 3) assigns role='employer'
+          // directly when this is 'employer' — verification (companies.
+          // verification_status) is the trust gate, not the role itself.
+          requested_account_type: parsed.data.accountType,
+          // Captured into profiles.pending_referral_code by the same
+          // trigger — credited below immediately if a session already
+          // exists, otherwise at first login (see loginAction).
+          referred_by_code: referralCode,
+        },
+      },
+    });
+
+    if (error) {
+      return { error: error.message || "Could not create your account. Please try again." };
+    }
+    if (!data.user) {
+      // Shouldn't happen if error is null, but signUp()'s own types allow
+      // it — guard explicitly rather than assume, since this exact class
+      // of "assumed-impossible" gap is what led here in the first place.
+      return { error: "Could not create your account. Please try again." };
+    }
+
+    // Everything in this block is a side effect of registration
+    // succeeding (marketing sync, referral crediting) — none of it
+    // should ever be able to turn a successful signup into a confusing
+    // error for the person registering. Caught as one block, logged
+    // server-side for real debugging, and never allowed to affect what's
+    // returned below.
+    try {
+      // Awaited deliberately, even though it never throws — on Vercel's
+      // serverless platform, a fire-and-forget network call can be killed
+      // mid-flight the moment this function returns, before it actually
+      // reaches Brevo. Awaiting it (its own internal try/catch already
+      // guarantees this never fails the registration itself) makes sure the
+      // sync genuinely completes rather than racing the response.
+      await addContactToBrevo({
+        email: parsed.data.email,
+        fullName: parsed.data.fullName,
+        role: parsed.data.accountType,
+      });
+
+      // If email confirmation isn't required, a real session exists right
+      // now — credit the referral immediately rather than waiting for a
+      // first login that (in this configuration) will never meaningfully
+      // differ from this moment.
+      if (data.session && referralCode) {
+        const referrerId = await referralRepository.findReferrerIdByCode(referralCode);
+        if (referrerId) {
+          await referralRepository.recordReferral(referrerId, data.user.id);
+          await (supabase.from("profiles") as any).update({ pending_referral_code: null }).eq("id", data.user.id);
+        }
+      }
+    } catch (e) {
+      console.error("Post-signup side effects failed (non-fatal — registration itself still succeeds):", e);
+    }
+
+    if (!data.session) {
+      return { success: true }; // email confirmation required
+    }
+
+    redirectTarget = parsed.data.accountType === "employer" ? "/dashboard/employer" : "/dashboard/applicant";
+  } catch (e) {
+    console.error("Registration failed unexpectedly:", e);
+    return { error: "Something went wrong creating your account. Please try again, or contact support if this keeps happening." };
   }
 
-  if (data.user && !data.session) {
-    return { success: true }; // email confirmation required
-  }
-
-  redirect(parsed.data.accountType === "employer" ? "/dashboard/employer" : "/dashboard/applicant");
+  redirect(redirectTarget);
 }
 
 export async function forgotPasswordAction(_prev: ActionState, formData: FormData): Promise<ActionState> {

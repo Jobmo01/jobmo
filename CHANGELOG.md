@@ -128,6 +128,119 @@ of likely impact:
   anything), and real job search now lives inside the applicant dashboard
   per the earlier "simplify the marketing site" direction.
 
+## Fix — registration error handling, take 2 — 2026-07-19
+
+### Fixed
+- **The previous fix only wrapped part of the function** — worth being
+  direct about, since the fallback message showing up again (instead of
+  "{}") was itself the proof: it meant the real error was still
+  happening somewhere before the section that got fixed last time, most
+  likely inside `supabase.auth.signUp()` itself throwing rather than
+  returning an error object, which had never actually been guarded.
+  Restructured the whole function so *everything* from form validation
+  through signup is now inside one comprehensive try/catch, with
+  `redirect()` kept structurally outside it (redirect works via a
+  special internal throw that must reach Next.js uncaught, so it's
+  computed as a plain string inside the try and only actually called
+  after the try/catch block ends) — nothing in this function can escape
+  uncaught anymore, regardless of where it originates.
+- Also added an explicit guard for `!data.user` after a signup that
+  reports no error — `signUp()`'s own return type technically allows
+  this combination even though it's not supposed to happen in practice;
+  worth guarding explicitly rather than assuming it's impossible, since
+  an unguarded "shouldn't happen" case is exactly the kind of gap that
+  led here in the first place.
+- **If this still happens after this fix**, the actual cause will now
+  be visible in Vercel's function logs (Vercel dashboard → project →
+  Logs, search around the time of the failed registration) — every
+  failure path in this function now logs a real `console.error` with
+  the underlying exception, not just a generic message to the person
+  registering.
+
+## Fix — registration could show a confusing "{}" error — 2026-07-19
+
+### Fixed
+- **Traced this as far as static analysis allows, and hardened the
+  system against it rather than leaving it to chance.** Reproduced the
+  actual Zod validation path directly (unchecked Terms checkbox) and
+  confirmed it correctly produces a readable message, not "{}" — so
+  that wasn't the cause. Found a real, separate gap while investigating:
+  `referralRepository.findReferrerIdByCode()`, unlike the other two
+  referral functions, had no try/catch of its own — if it ever threw
+  (for example, `SUPABASE_SERVICE_ROLE_KEY` not being configured in a
+  given environment), that exception was genuinely uncaught inside
+  `registerAction`, with no guarantee about what shape of error would
+  result. Wrapped all of the post-signup side effects (Brevo sync,
+  referral crediting) in one try/catch that logs the real error
+  server-side and never lets it affect what's returned to the person
+  registering — registration success is no longer contingent on any of
+  these side effects succeeding.
+- **Separately, guarded the error display itself** so this exact
+  confusing symptom — raw object notation shown as literal text —
+  can't happen again regardless of root cause: the register form now
+  only ever displays `state.error` if it's genuinely a non-empty
+  string, falling back to a clear, readable message otherwise.
+- Deliberately did not touch the `redirect()` call itself or wrap it in
+  any try/catch — Next.js's redirect works via a special internal throw
+  that must propagate uncaught for the actual redirect to happen; the
+  new try/catch block ends before that call, not around it.
+
+## Added — branded confirmation email template — 2026-07-19
+
+### Added
+- Built a properly branded HTML template for Supabase's "Confirm
+  signup" email — JobMo logo, brand purple CTA button, and a fallback
+  plain-text link, using inline styles and a table-based layout for
+  broad email-client compatibility (this isn't optional for email the
+  way it is for a website — many clients, especially older Outlook
+  desktop versions, don't reliably support modern CSS). Saved to
+  `docs/email-templates/confirm-signup.html` as a reference file rather
+  than only handed over in chat, so it's version-controlled alongside
+  the app. This is a documentation file only — not imported or used by
+  the Next.js app itself, so it doesn't affect the build.
+- This needed custom SMTP already configured to actually take effect —
+  Supabase restricted free-tier template editing to projects with a
+  custom SMTP provider as of a June 2026 policy change, but Brevo was
+  already set up earlier in this project, so no additional setup was
+  needed there.
+
+## Fix — certificate download crash, redesigned as a professional PDF — 2026-07-19
+
+### Fixed
+- **Found and reproduced the actual crash** rather than guessing at it:
+  a quiz title containing any character outside Latin-1 — an em-dash,
+  curly quotes, etc., all genuinely common in admin-authored titles —
+  crashed the `Content-Disposition` header outright the instant it was
+  set (`Cannot convert argument to a ByteString`), aborting the response
+  before anything was ever sent to the browser. This is exactly the kind
+  of failure a browser shows as a connection error ("site wasn't
+  available") rather than a clean HTTP error page, since it happens
+  mid-response rather than as a proper rejected request. Verified this
+  directly: rendering the PDF itself always succeeded even with these
+  characters — the crash was specifically in the filename header, not
+  the certificate content. Fixed by stripping the filename to safe ASCII
+  before it ever reaches a header, regardless of what an admin later
+  titles a quiz.
+- The whole route is now wrapped in a try/catch, returning a clean JSON
+  error instead of an unhandled crash for any other failure — so a
+  future edge case here fails predictably and debuggably instead of
+  looking like the whole site is down.
+
+### Changed
+- **Redesigned the certificate as an actual professional certificate**,
+  not the plain single-bordered box it was before: a formal double
+  border (purple outer frame, gold inner frame), serif typography for
+  the ceremonial feel, a JobMo brand mark, a signature-style footer with
+  date-issued and issuing-authority lines, and a certificate ID for
+  authenticity. Along the way, found and fixed a real layout bug in my
+  first draft of this redesign — using `calc()` for the frame's height
+  produced a stray, nearly-blank second page in testing; switched to a
+  flex-based fill instead, which is a more reliably-supported pattern in
+  the PDF rendering engine this app uses, and confirmed it renders as
+  exactly one page across several realistic titles (including the
+  em-dash case that started this whole investigation) before shipping
+  it.
+
 ## Fix — Learning Center missing from super_admin navigation — 2026-07-18
 
 ### Fixed

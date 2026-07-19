@@ -114,7 +114,9 @@ export function RegisterForm() {
 
         {state?.error && (
           <p role="alert" className="text-sm text-destructive">
-            {state.error}
+            {typeof state.error === "string" && state.error.trim() && state.error !== "{}"
+              ? state.error
+              : "Something went wrong creating your account. Please try again, or contact support if this keeps happening."}
           </p>
         )}
 
